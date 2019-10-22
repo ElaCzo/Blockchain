@@ -24,7 +24,7 @@
 
   <target name="run" depends="compile"
           description="run examples">
-    <java classname="Main" classpath="${build}">
+    <java classname="Pair2Pair.P2P" classpath="${build}">
         <arg value="${arg0}"/>
         <arg value="${arg1}"/>
     </java>
