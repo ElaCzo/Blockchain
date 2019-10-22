@@ -1,5 +1,8 @@
 package Pair2Pair;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -11,13 +14,29 @@ import java.util.Random;
 public class P2P {
 
     public static void main(String[] args) {
+
+        ArrayList<String> dict = new ArrayList<>();
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader("./dict/dict_100000_1_10.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                dict.add(line);
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         Pair[] pairs = new Pair[40];
 
+        Random rnd = new Random();
+
         ArrayList<Character> pool = new ArrayList<>();
-        pool.add('e');
-        pool.add('d');
-        pool.add('g');
-        pool.add('f');
+        for (int i = 0; i < 100; i++) {
+            pool.add((char) (rnd.nextInt(26) + 'a'));
+        }
 
         pairs[0] = new Auteur(pool);
 
@@ -25,25 +44,25 @@ public class P2P {
             if (i < 20) {
                 pairs[i] = new Auteur();
             } else {
-                pairs[i] = new Politicien();
+                pairs[i] = new Politicien(dict);
 
             }
         }
 
         for (int i = 0; i < pairs.length; i++) {
-            int rand = new Random().nextInt(19);
+            int rand = rnd.nextInt(40);
             pairs[i].addLien(pairs[rand]);
-            rand = new Random().nextInt(19);
+            rand = rnd.nextInt(40);
             pairs[i].addLien(pairs[rand]);
-            rand = new Random().nextInt(19);
+            rand = rnd.nextInt(40);
             pairs[i].addLien(pairs[rand]);
-            rand = new Random().nextInt(19);
+            rand = rnd.nextInt(40);
             pairs[i].addLien(pairs[rand]);
-            rand = new Random().nextInt(19);
+            rand = rnd.nextInt(40);
             pairs[i].addLien(pairs[rand]);
         }
 
-        for (Pair pair :pairs ) {
+        for (Pair pair : pairs) {
             pair.start();
         }
 

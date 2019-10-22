@@ -4,28 +4,28 @@ import java.util.ArrayList;
 
 public class Block {
     private String mot;
-    private String hash;
+    private int hash;
     private Block suivant;
-    private int AuteutID;
+    private int AuteurID;
 
     ArrayList<Lettre> lettres = new ArrayList<>();
 
-    public Block(String mot, String hash, int AuteutID) {
+    public Block(String mot, int hash, int AuteurID) {
         this.mot = mot;
         this.hash = hash;
-        this.AuteutID = AuteutID;
+        this.AuteurID = AuteurID;
         suivant = null;
     }
 
-    public Block(String mot, String hash, Block precedent, int AuteutID) {
-        this(mot, hash, AuteutID);
+    public Block(String mot, int hash, Block precedent, int AuteurID) {
+        this(mot, hash, AuteurID);
         precedent.suivant = this;
     }
 
     /**
      * @return the hash
      */
-    public String getHash() {
+    public int getHash() {
         return hash;
     }
 
@@ -53,18 +53,18 @@ public class Block {
     /**
      * @return the auteutID
      */
-    public int getAuteutID() {
-        return AuteutID;
+    public int getAuteurID() {
+        return AuteurID;
     }
 
-    public String hash() {
+    public void hash() {
         try {
-            String hash = Sha.Sha256(new String(mot + "" + AuteutID));
-        } catch (Exception e) {
-            System.out.println("Erreur SHA dans BLOCK");
-        }
 
-        return hash;
+            int nhash = Sha.Sha256(new String(mot + "" + AuteurID));
+            this.hash = nhash;
+        } catch (Exception e) {
+            System.out.println("Erreur SHA dans LETTRE");
+        }
 
     }
 }

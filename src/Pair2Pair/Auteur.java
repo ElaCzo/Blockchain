@@ -1,6 +1,7 @@
 package Pair2Pair;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Auteur
@@ -16,7 +17,7 @@ public class Auteur extends Pair {
 
     public Auteur(ArrayList<Character> pool) {
         super();
-        this.pool = pool;
+        this.pool = new ArrayList<>(pool);
     }
 
     /**
@@ -26,6 +27,21 @@ public class Auteur extends Pair {
         return pool;
     }
 
+    private void generateLettre() {
+
+        Random rnd = new Random();
+        int random = rnd.nextInt(pool.size() );
+        int nonce = 0;
+        Lettre l = new Lettre(pool.get(random), id, nonce);
+        while (Integer.numberOfLeadingZeros(l.getHash()) < 8) {
+            nonce++;
+            l = new Lettre(pool.get(random), id, nonce);
+
+        }
+        pool.remove(random);
+        sendMessage(new Message(l, id));
+    }
+
     @Override
     public void sendMessage(Message m) {
 
@@ -33,8 +49,9 @@ public class Auteur extends Pair {
 
         if (m.getType() == TypeMessage.STRING) {
             String message = m.getContenu();
-            // System.out.println("AUTEUR : " + id + " receive " + message + " from " + m.getAuteurID() + " ( MID : "
-            //         + m.getId() + " ) ");
+            // System.out.println("AUTEUR : " + id + " receive " + message + " from " +
+            // m.getAuteurID() + " ( MID : "
+            // + m.getId() + " ) ");
 
             for (Pair pair : liens) {
                 if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
@@ -46,10 +63,11 @@ public class Auteur extends Pair {
 
         if (m.getType() == TypeMessage.POOLLETTRE) {
 
-            pool = m.getPool();
+            pool = this.pool = new ArrayList<>(m.getPool());
 
-            // System.out.println("AUTEUR : " + id + " receive letter pool from " + m.getAuteurID() + " ( MID : "
-            //         + m.getId() + " ) ");
+            // System.out.println("AUTEUR : " + id + " receive letter pool from " +
+            // m.getAuteurID() + " ( MID : "
+            // + m.getId() + " ) ");
 
             for (Pair pair : liens) {
                 if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
@@ -61,6 +79,19 @@ public class Auteur extends Pair {
             synchronized (this) {
 
                 this.notifyAll();
+            }
+        }
+
+        if (m.getType() == TypeMessage.LETTRE) {
+            // System.out.println("AUTEUR : " + id + " receive " + message + " from " +
+            // m.getAuteurID() + " ( MID : "
+            // + m.getId() + " ) ");
+
+            for (Pair pair : liens) {
+                if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+
+                    pair.sendMessage(m);
+                }
             }
         }
 
@@ -86,5 +117,10 @@ public class Auteur extends Pair {
             System.out.println("AUTEUR : " + id + " a reçu le pool");
         } catch (InterruptedException e) {
         }
+
+        while (!pool.isEmpty() && pool.size() > 0) {
+            generateLettre();
+        }
+        System.out.println("AUTEUR : " + id + " a fini");
     }
 }

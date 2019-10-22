@@ -8,8 +8,19 @@ import java.util.ArrayList;
 
 public class Politicien extends Pair {
 
-    public Politicien() {
+    ArrayList<Lettre> lettres;
+    ArrayList<String> dict;
+
+    public Politicien(ArrayList<String> dict) {
         super();
+        lettres = new ArrayList<>();
+        this.dict = new ArrayList<>(dict);
+    }
+
+    public synchronized void addLettre(Lettre l) {
+        if (!this.lettres.contains(l)) {
+            lettres.add(l);
+        }
     }
 
     @Override
@@ -40,16 +51,35 @@ public class Politicien extends Pair {
 
         }
 
+        if (m.getType() == TypeMessage.LETTRE) {
+            System.out.println("POLITICIEN : " + id + " receive " + m.getLettre().getC()
+            + " from " + m.getAuteurID()
+            + " ( MID : " + m.getId() + " ) ");
+
+            addLettre(m.getLettre());
+
+            for (Pair pair : liens) {
+                if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+
+                    pair.sendMessage(m);
+                }
+            }
+        }
+
     }
 
+    @Override
     public void run() {
-
+        System.out.println("POLITICIEN : " + id + " start");
         try {
             Thread.sleep(1000);
         } catch (Exception e) {
             // TODO: handle exception
         }
 
-        System.out.println("POLITICIEN : " + id + " start");
+        // for (int i = 0; i < lettres.size(); i++) {
+        //     System.out.println("lettre : " + lettres.get(i).getC());
+        // }
+
     }
 }
