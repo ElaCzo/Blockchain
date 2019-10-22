@@ -12,7 +12,7 @@ public class Main {
         try {
             URL url = new URL("http://localhost");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
+            con.setRequestMethod("POST");
 
         } catch (Exception e) {
             // TODO: handle exception
