@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
+// import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
 public class Sha {
     public static int Sha256(String text) throws NoSuchAlgorithmException {

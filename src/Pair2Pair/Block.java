@@ -74,10 +74,6 @@ public class Block {
     }
 
     /**
-     * @return the length
-     */
-
-    /**
      * @return the nonce
      */
     public int getNonce() {
