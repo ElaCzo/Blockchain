@@ -1,5 +1,7 @@
 package Pair2Pair;
 
+import java.util.ArrayList;
+
 public class Lettre {
     private int nonce;
     private char c;
@@ -22,6 +24,14 @@ public class Lettre {
             System.out.println("Erreur SHA dans LETTRE");
         }
 
+    }
+
+    public static boolean contain(int auteurId, ArrayList<Lettre> list) {
+        for (Lettre lettre : list) {
+            if (lettre.auteurId == auteurId)
+                return true;
+        }
+        return false;
     }
 
     /**

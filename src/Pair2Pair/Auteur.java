@@ -10,6 +10,8 @@ public class Auteur extends Pair {
 
     private ArrayList<Character> pool;
 
+    private int diff = 12;
+
     public Auteur() {
         super();
         this.pool = null;
@@ -18,6 +20,32 @@ public class Auteur extends Pair {
     public Auteur(ArrayList<Character> pool) {
         super();
         this.pool = new ArrayList<>(pool);
+    }
+
+    public void calcScore() {
+
+        for (Block blo : blockchain) {
+
+            if (blo.getAuteurID() == id) {
+
+                for (Lettre let : blo.getLettres()) {
+                    if (let.getAuteurId() == id) {
+
+                        synchronized ((Integer) score) {
+                            score += blo.getLettres().size();
+                        }
+                        break;
+                    }
+
+                }
+            }
+        }
+    }
+
+    @Override
+    public int getScore() {
+        calcScore();
+        return score;
     }
 
     /**
@@ -30,10 +58,10 @@ public class Auteur extends Pair {
     private void generateLettre() {
 
         Random rnd = new Random();
-        int random = rnd.nextInt(pool.size() );
+        int random = rnd.nextInt(pool.size());
         int nonce = 0;
         Lettre l = new Lettre(pool.get(random), id, nonce);
-        while (Integer.numberOfLeadingZeros(l.getHash()) < 8) {
+        while (Integer.numberOfLeadingZeros(l.getHash()) < diff) {
             nonce++;
             l = new Lettre(pool.get(random), id, nonce);
 
@@ -45,53 +73,87 @@ public class Auteur extends Pair {
     @Override
     public void sendMessage(Message m) {
 
-        addMessageId(m.getId());
+        if (!getMessagesRecus().contains(m.getId())) {
 
-        if (m.getType() == TypeMessage.STRING) {
-            String message = m.getContenu();
-            // System.out.println("AUTEUR : " + id + " receive " + message + " from " +
-            // m.getAuteurID() + " ( MID : "
-            // + m.getId() + " ) ");
+            addMessageId(m.getId());
+            switch (m.getType()) {
+            case STRING:
+                String message = m.getContenu();
+                // System.out.println("AUTEUR : " + id + " receive " + message + " from " +
+                // m.getAuteurID() + " ( MID : "
+                // + m.getId() + " ) ");
 
-            for (Pair pair : liens) {
-                if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+                for (Pair pair : liens) {
+                    if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
-                    pair.sendMessage(m);
+                        pair.sendMessage(m);
+                    }
                 }
-            }
-        }
+                break;
 
-        if (m.getType() == TypeMessage.POOLLETTRE) {
+            case POOLLETTRE:
 
-            pool = this.pool = new ArrayList<>(m.getPool());
+                this.pool = new ArrayList<>(m.getPool());
 
-            // System.out.println("AUTEUR : " + id + " receive letter pool from " +
-            // m.getAuteurID() + " ( MID : "
-            // + m.getId() + " ) ");
+                // System.out.println("AUTEUR : " + id + " receive letter pool from " +
+                // m.getAuteurID() + " ( MID : "
+                // + m.getId() + " ) ");
 
-            for (Pair pair : liens) {
-                if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+                for (Pair pair : liens) {
+                    if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
-                    pair.sendMessage(m);
+                        pair.sendMessage(m);
+                    }
                 }
-            }
 
-            synchronized (this) {
+                synchronized (this) {
 
-                this.notifyAll();
-            }
-        }
-
-        if (m.getType() == TypeMessage.LETTRE) {
-            // System.out.println("AUTEUR : " + id + " receive " + message + " from " +
-            // m.getAuteurID() + " ( MID : "
-            // + m.getId() + " ) ");
-
-            for (Pair pair : liens) {
-                if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
-
-                    pair.sendMessage(m);
+                    this.notifyAll();
                 }
+
+            case LETTRE:
+                // System.out.println("AUTEUR : " + id + " receive " + m.getLettre().getC() + "
+                // from " + m.getAuteurID()
+                // + " ( MID : " + m.getId() + " ) ");
+
+                for (Pair pair : liens) {
+                    if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+
+                        pair.sendMessage(m);
+                    }
+                }
+
+                break;
+
+            case BLOCK:
+
+                // System.out.println(
+                // "Auteur : " + id + " receive block from " + m.getAuteurID() + " ( MID : " +
+                // m.getId() + " ) ");
+
+                // if (m.getBlock().isValid()) {
+
+                if (blockchain.size() < m.getBlock().size()) {
+                    blockchain = m.getBlock();
+                    for (Pair pair : liens) {
+
+                        pair.sendMessage(new Message(id, blockchain));
+                    }
+                } else {
+
+                    for (Pair pair : liens) {
+                        if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+
+                            pair.sendMessage(m);
+                        }
+                    }
+
+                    // }
+                }
+                break;
+
+            default:
+                break;
             }
         }
 
@@ -99,7 +161,6 @@ public class Auteur extends Pair {
 
     public void run() {
         try {
-            Thread.sleep(1000);
             System.out.println("AUTEUR : " + id + " start");
 
             if (pool != null) {
@@ -119,8 +180,9 @@ public class Auteur extends Pair {
         }
 
         while (!pool.isEmpty() && pool.size() > 0) {
+
             generateLettre();
         }
-        System.out.println("AUTEUR : " + id + " a fini");
+
     }
 }

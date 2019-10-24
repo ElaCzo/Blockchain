@@ -29,19 +29,21 @@ public class P2P {
             e.printStackTrace();
         }
 
-        Pair[] pairs = new Pair[40];
+        int nbPairs = 6;
+
+        Pair[] pairs = new Pair[nbPairs];
 
         Random rnd = new Random();
 
         ArrayList<Character> pool = new ArrayList<>();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 20; i++) {
             pool.add((char) (rnd.nextInt(26) + 'a'));
         }
 
         pairs[0] = new Auteur(pool);
 
-        for (int i = 1; i < pairs.length; i++) {
-            if (i < 20) {
+        for (int i = 1; i < nbPairs; i++) {
+            if (i < nbPairs / 2) {
                 pairs[i] = new Auteur();
             } else {
                 pairs[i] = new Politicien(dict);
@@ -49,17 +51,23 @@ public class P2P {
             }
         }
 
-        for (int i = 0; i < pairs.length; i++) {
-            int rand = rnd.nextInt(40);
+        for (int i = 0; i < nbPairs; i++) {
+            if (i != 0) {
+                pairs[i].addLien(pairs[i - 1]);
+            }
+            int rand = rnd.nextInt(nbPairs);
             pairs[i].addLien(pairs[rand]);
-            rand = rnd.nextInt(40);
+            rand = rnd.nextInt(nbPairs);
             pairs[i].addLien(pairs[rand]);
-            rand = rnd.nextInt(40);
+            rand = rnd.nextInt(nbPairs);
             pairs[i].addLien(pairs[rand]);
-            rand = rnd.nextInt(40);
+            rand = rnd.nextInt(nbPairs);
             pairs[i].addLien(pairs[rand]);
-            rand = rnd.nextInt(40);
+            rand = rnd.nextInt(nbPairs);
             pairs[i].addLien(pairs[rand]);
+            if (i < nbPairs - 2) {
+                pairs[i].addLien(pairs[i + 1]);
+            }
         }
 
         for (Pair pair : pairs) {
@@ -69,6 +77,14 @@ public class P2P {
         for (Pair pair : pairs) {
             try {
                 pair.join();
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+
+        for (Pair pair : pairs) {
+            try {
+                System.out.println("Pair : " + pair.getPairId() + " score : " + pair.getScore());
             } catch (Exception e) {
                 // TODO: handle exception
             }

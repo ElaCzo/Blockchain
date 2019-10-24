@@ -13,7 +13,7 @@ public class Message {
     private int auteurID;
     private ArrayList<Character> pool = null;
     private Lettre lettre = null;
-    private Block block = null;
+    private ArrayList<Block> block = null;
 
     private static int cpt = 0;
     private int id;
@@ -49,17 +49,17 @@ public class Message {
         this.lettre = lettre;
     }
 
-    public Message(Block block, int auteurID) {
+    public Message(int auteurID, ArrayList<Block> block) {
         this();
         this.type = TypeMessage.BLOCK;
         this.auteurID = auteurID;
-        this.block = block;
+        this.block = new ArrayList<>(block);
     }
 
     /**
      * @return the block
      */
-    public Block getBlock() {
+    public ArrayList<Block> getBlock() {
         return block;
     }
 
