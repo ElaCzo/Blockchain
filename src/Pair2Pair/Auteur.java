@@ -10,7 +10,7 @@ public class Auteur extends Pair {
 
     private ArrayList<Character> pool;
 
-    private int diff = 12;
+    private int diff = 8;
 
     public Auteur() {
         super();
@@ -22,30 +22,8 @@ public class Auteur extends Pair {
         this.pool = new ArrayList<>(pool);
     }
 
-    public void calcScore() {
-
-        for (Block blo : blockchain) {
-
-            if (blo.getAuteurID() == id) {
-
-                for (Lettre let : blo.getLettres()) {
-                    if (let.getAuteurId() == id) {
-
-                        synchronized ((Integer) score) {
-                            score += blo.getLettres().size();
-                        }
-                        break;
-                    }
-
-                }
-            }
-        }
-    }
-
-    @Override
     public int getScore() {
-        calcScore();
-        return score;
+        return blockchain.auteurScore(id);
     }
 
     /**
@@ -127,28 +105,67 @@ public class Auteur extends Pair {
 
             case BLOCK:
 
-                // System.out.println(
-                // "Auteur : " + id + " receive block from " + m.getAuteurID() + " ( MID : " +
-                // m.getId() + " ) ");
+                System.out.println("Auteur : " + id + " receive block from " + m.getAuteurID() + " nb lettres "
+                        + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
 
-                // if (m.getBlock().isValid()) {
+                if (m.getBlock().isValid()) {
 
-                if (blockchain.size() < m.getBlock().size()) {
-                    blockchain = m.getBlock();
-                    for (Pair pair : liens) {
+                    System.out.println("Auteur  : " + id + " valid ");
 
-                        pair.sendMessage(new Message(id, blockchain));
+                    int value = blockchain.value();
+                    System.out.println("Auteur  : " + id + " valid | prev value " + blockchain.value()
+                            + " proposed value " + m.getBlock().value());
+
+                    if (value <= m.getBlock().value()) {
+                        blockchain = m.getBlock();
+                        ArrayList<Character> ch = m.getBlock().getChars();
+                        if (ch.size() > 60 && fini == false) {
+                            System.out.println("Auteur  : " + id + " check fin ");
+
+                            boolean val = true;
+                            for (Character character : pool) {
+                                if (!ch.contains(pool)) {
+                                    val = false;
+                                    break;
+                                }
+                            }
+                            if (val) {
+                                System.out.println("Auteur  : " + id + " find fin ");
+
+                                for (Pair pair : liens) {
+
+                                    pair.sendMessage(new Message(m.getBlock()));
+                                    fini = true;
+
+                                }
+                                return;
+                            }
+
+                        }
+                        for (Pair pair : liens) {
+
+                            pair.sendMessage(m);
+                        }
                     }
-                } else {
+                }
 
+                break;
+
+            case FINI:
+
+            System.out.println("Auteur : " + id + " receive Fin from " + m.getAuteurID() + " nb lettres "
+            + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
+
+
+                if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value() && fini == false) {
                     for (Pair pair : liens) {
                         if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
                             pair.sendMessage(m);
                         }
-                    }
 
-                    // }
+                    }
+                    fini = true;
                 }
                 break;
 

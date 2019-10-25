@@ -19,32 +19,6 @@ public class Block {
         hash();
     }
 
-    // public boolean isValid() {
-    // ArrayList<Lettre> l = new ArrayList<>();
-    // Block blo = this;
-    // while (blo.floor == false) {
-    // for (Lettre lettre : lettres) {
-    // if (l.contains(lettre)) {
-    // return false;
-    // }
-    // l.add(lettre);
-    // }
-    // char[] m = mot.toCharArray();
-    // if (m.length != lettres.size()) {
-    // return false;
-    // }
-    // for (int i = 0; i < m.length; i++) {
-    // if (m[i] != lettres.get(i).getC()) {
-    // return false;
-    // }
-
-    // }
-    // blo = blo.getPred();
-    // }
-    // return true;
-
-    // }
-
     /**
      * @return the hash
      */
@@ -91,11 +65,4 @@ public class Block {
 
     }
 
-    // public void print() {
-    // Block blo = this;
-    // while (blo.floor == false) {
-    // System.out.println(mot + " size " + length);
-    // blo = blo.getPred();
-    // }
-    // }
 }

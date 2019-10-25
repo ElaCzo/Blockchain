@@ -29,14 +29,50 @@ public class P2P {
             e.printStackTrace();
         }
 
-        int nbPairs = 6;
+        try {
+            reader = new BufferedReader(new FileReader("./dict/dict_100000_5_15.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                dict.add(line);
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            reader = new BufferedReader(new FileReader("./dict/dict_100000_25_75.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                dict.add(line);
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            reader = new BufferedReader(new FileReader("./dict/dict_100000_50_200.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                dict.add(line);
+                line = reader.readLine();
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int nbPairs = 10;
 
         Pair[] pairs = new Pair[nbPairs];
 
         Random rnd = new Random();
 
         ArrayList<Character> pool = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 10; i++) {
             pool.add((char) (rnd.nextInt(26) + 'a'));
         }
 

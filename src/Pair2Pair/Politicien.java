@@ -12,13 +12,13 @@ import java.util.Random;
 
 public class Politicien extends Pair {
 
-    private ArrayList<ArrayList<Block>> received_block;
+    private ArrayList<Blockchain> received_block;
 
     private ArrayList<Lettre> lettres;
     private ArrayList<Lettre> lettresRec;
     private ArrayList<String> dict;
 
-    private int diff = 24;
+    private int diff = 20;
 
     public Politicien(ArrayList<String> dict) {
         super();
@@ -40,25 +40,8 @@ public class Politicien extends Pair {
         }
     }
 
-    public void calcScore() {
-
-        for (Block blo : blockchain) {
-
-            if (blo.getAuteurID() == id) {
-
-                synchronized ((Integer) score) {
-                    score += blo.getLettres().size();
-                }
-            }
-
-        }
-
-    }
-
-    @Override
     public int getScore() {
-        calcScore();
-        return score;
+        return blockchain.politicienScore(id);
     }
 
     public Block createMot() {
@@ -167,6 +150,8 @@ public class Politicien extends Pair {
                 }
 
                 synchronized (this) {
+                    System.out.println("POLITICIEN : " + id + " wakeup ");
+
                     this.notifyAll();
                 }
 
@@ -174,22 +159,38 @@ public class Politicien extends Pair {
 
             case BLOCK:
 
-                // System.out.println("POLITICIEN : " + id + " receive block from " +
-                // m.getAuteurID() + " ( MID : "
-                // + m.getId() + " ) ");
-
                 synchronized (received_block) {
 
                     received_block.add(m.getBlock());
                 }
 
-                // for (Pair pair : liens) {
-                // if (m.getAuteurID() != pair.getPairId() &&
-                // !pair.getMessagesRecus().contains(m.getId())) {
+                break;
 
-                // pair.sendMessage(m);
-                // }
-                // }
+            case FINI:
+
+                System.out.println("POLITICIEN : " + id + " receive Fin from " + m.getAuteurID() + " nb lettres "
+                        + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
+
+                if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value() && fini == false) {
+                    for (Pair pair : liens) {
+                        if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+
+                            pair.sendMessage(m);
+
+                        }
+
+                    }
+                    System.out.println("FIN TRUVEE : " + id + " ( MID : " + m.getId() + " ) ");
+
+                    fini = true;
+
+                }
+
+                synchronized (this) {
+                    System.out.println("POLITICIEN : " + id + " wakeup ");
+
+                    this.notifyAll();
+                }
 
                 break;
 
@@ -209,6 +210,8 @@ public class Politicien extends Pair {
             try {
 
                 synchronized (this) {
+                    System.out.println("POLITICIEN : " + id + " attend ");
+
                     this.wait();
                 }
 
@@ -218,59 +221,74 @@ public class Politicien extends Pair {
 
         }
 
-        while (!lettres.isEmpty() || lettres.size() > 0) {
+        while (fini == false) {
 
-            Block b = createMot();
-            System.out.println("POLITICIEN : " + id + " a fini Block | taille du mot " + b.getMot().length() + "/"
-                    + b.getLettres().size());
+            while (!lettres.isEmpty() || lettres.size() > 0) {
 
-            if (b != null) {
+                Block b = createMot();
+                // System.out.println("POLITICIEN : " + id + " a fini Block | taille du mot " +
+                // b.getMot().length() + "/"
+                // + b.getLettres().size());
 
-                blockchain.add(b);
+                if (b != null) {
+
+                    blockchain.add(b);
+                }
+
+                if (!blockchain.isValid()) {
+                    blockchain = new Blockchain();
+                }
+
+                synchronized (received_block) {
+                    for (Blockchain block : received_block) {
+                        assert (block != null);
+                        if (block.value() > blockchain.value()) {
+                            blockchain = block;
+                        }
+                    }
+
+                    received_block.clear();
+                }
+
+                synchronized (lettres) {
+
+                    lettres = new ArrayList<>(lettresRec);
+
+                    ArrayList<Lettre> l = new ArrayList<>();
+
+                    for (Block block : blockchain.getChain()) {
+                        l.addAll(block.getLettres());
+                    }
+
+                    lettres.removeAll(l);
+
+                }
+                for (Pair pair : liens) {
+                    pair.sendMessage(new Message(new Blockchain(blockchain.getChain()), id));
+                }
+
+                System.out.println("POLITICIEN : " + id + " taille Block " + blockchain.getChain().size()
+                        + " nb lettres :" + blockchain.getChars().size() + "  lettres restantes " + lettres.size() + "/"
+                        + lettresRec.size() + " value " + blockchain.value());
+
             }
 
-            // if (!b.isValid()) {
-            // blockchain = new Block();
-            // }
+            if (fini == false) {
 
-            synchronized (received_block) {
-                for (ArrayList<Block> block : received_block) {
-                    assert (block != null);
-                    if (block.size() > blockchain.size()) {
-                        blockchain = block;
+                synchronized (this) {
+
+                    System.out.println("POLITICIEN : " + id + " attend ");
+                    try {
+
+                        this.wait();
+                    } catch (Exception e) {
+                        // TODO: handle exception
                     }
                 }
-
-                received_block.clear();
             }
-
-            synchronized (lettres) {
-
-                lettres = new ArrayList<>(lettresRec);
-
-                ArrayList<Lettre> l = new ArrayList<>();
-
-                for (Block block : blockchain) {
-                    l.addAll(block.getLettres());
-
-                }
-
-                lettres.removeAll(l);
-
-            }
-
-            for (Pair pair : liens) {
-
-                pair.sendMessage(new Message(id, blockchain));
-            }
-
-            System.out.println("POLITICIEN : " + id + " taille Block " + blockchain.size() + " | lettres restantes "
-                    + lettres.size() + "/" + lettresRec.size());
-            // blockchain.print();
-
         }
 
-        System.out.println("POLITICIEN : " + id + " a fini | B taille : " + blockchain.size());
+        System.out.println("POLITICIEN : " + id + " a fini | B taille : " + blockchain.getChain().size());
 
     }
 }

@@ -10,27 +10,23 @@ import java.util.Base64;
  */
 public abstract class Pair extends Thread {
 
-    protected int score;
-
     protected ArrayList<Integer> messagesRecus;
-
-    protected ArrayList<Message> messagesAttente;
 
     protected ArrayList<Pair> liens;
 
-    protected ArrayList<Block> blockchain;
+    protected Blockchain blockchain;
 
     protected static int cpt = 0;
     protected int id;
 
+    protected boolean fini = false;
+
     public Pair() {
-        score = 0;
         liens = new ArrayList<>();
         messagesRecus = new ArrayList<>();
         id = cpt;
         cpt++;
-        messagesAttente = new ArrayList<>();
-        blockchain = new ArrayList<>();
+        blockchain = new Blockchain();
 
     }
 
@@ -40,6 +36,8 @@ public abstract class Pair extends Thread {
             lien.addLien(this);
         }
     }
+
+    public abstract int getScore();
 
     /**
      * @return the messagesRecus
@@ -76,13 +74,6 @@ public abstract class Pair extends Thread {
     }
 
     public abstract void sendMessage(Message m);
-
-    /**
-     * @return the score
-     */
-    public int getScore() {
-        return score;
-    }
 
     @Override
     public abstract void run();

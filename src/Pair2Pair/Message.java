@@ -13,7 +13,7 @@ public class Message {
     private int auteurID;
     private ArrayList<Character> pool = null;
     private Lettre lettre = null;
-    private ArrayList<Block> block = null;
+    private Blockchain block = null;
 
     private static int cpt = 0;
     private int id;
@@ -49,17 +49,24 @@ public class Message {
         this.lettre = lettre;
     }
 
-    public Message(int auteurID, ArrayList<Block> block) {
+    public Message(Blockchain bloc, int auteurID) {
         this();
         this.type = TypeMessage.BLOCK;
         this.auteurID = auteurID;
-        this.block = new ArrayList<>(block);
+        this.block = new Blockchain(bloc.getChain());
     }
+
+    public Message(Blockchain bloc) {
+        this();
+        this.type = TypeMessage.FINI;
+        this.block = new Blockchain(bloc.getChain());
+    }
+
 
     /**
      * @return the block
      */
-    public ArrayList<Block> getBlock() {
+    public Blockchain getBlock() {
         return block;
     }
 
