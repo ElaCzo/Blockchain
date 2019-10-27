@@ -19,6 +19,10 @@ public class Blockchain {
         chain = new ArrayList<>(bl);
     }
 
+    public int size() {
+        return chain.size();
+    }
+
     public boolean add(Block blo) {
         bvalue = 0;
         return chain.add(blo);

@@ -119,7 +119,7 @@ public class Auteur extends Pair {
                     if (value <= m.getBlock().value()) {
                         blockchain = m.getBlock();
                         ArrayList<Character> ch = m.getBlock().getChars();
-                        if (ch.size() > 60 && fini == false) {
+                        if (blockchain.size() > 20 && fini == false) {
                             System.out.println("Auteur  : " + id + " check fin ");
 
                             boolean val = true;
@@ -153,9 +153,8 @@ public class Auteur extends Pair {
 
             case FINI:
 
-            System.out.println("Auteur : " + id + " receive Fin from " + m.getAuteurID() + " nb lettres "
-            + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
-
+                System.out.println("Auteur : " + id + " receive Fin from " + m.getAuteurID() + " nb lettres "
+                        + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
 
                 if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value() && fini == false) {
                     for (Pair pair : liens) {
