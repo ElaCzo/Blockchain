@@ -24,6 +24,19 @@ public class Util {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void writeMsg(DataOutputStream os, String msg) {
+		System.out.println("json message " + msg.toString());
+		System.out.println("length : " + msg.length());
+		try {
+			os.writeLong(msg.length());
+			os.write(msg.getBytes());
+			os.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	public static String readMsg(DataInputStream is) {
 		byte size_of_msg_bytes[] = new byte[8];
