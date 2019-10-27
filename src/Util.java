@@ -112,6 +112,10 @@ public class Util {
 		return new String(b);
 	}
 
+	public static boolean isRequest(String msgJSON, String request){
+		return msgJSON.contains(request);
+	}
+
 } 
 
 
