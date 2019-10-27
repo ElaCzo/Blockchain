@@ -1,5 +1,9 @@
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import net.i2p.crypto.eddsa.EdDSAPrivateKey;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -38,6 +42,11 @@ public class Client {
         is = new DataInputStream(socketOfClient.getInputStream());
     	
     	
+        ED25519 ed = new ED25519();
+        KeyPair kp = ed.genKeys();
+        EdDSAPublicKey pk = ((EdDSAPublicKey) kp.getPublic());
+        System.out.println(Util.bytesToHex(pk.getAbyte()));
+        
         JSONObject reg = new JSONObject();
         tmpKey = "b7b597e0d64accdb6d8271328c75ad301c29829619f4865d31cc0c550046a08f";
         reg.put("register", tmpKey);
