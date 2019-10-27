@@ -1,6 +1,6 @@
 <project name="block" default="compile" basedir=".">
     <description>
-        The build file for Grep program
+        The build file for Blockchain program
     </description>
   <!-- set global properties for this build -->
   <property name="src" location="src"/>
@@ -22,9 +22,16 @@
     <javac debug="true" srcdir="${src}" excludes="" destdir="${build}"  includeantruntime="false" />
   </target>
 
-  <target name="run" depends="compile"
+  <target name="runP2P" depends="compile"
           description="run examples">
     <java classname="Pair2Pair.P2P" classpath="${build}">
+        <arg value="${arg0}"/>
+        <arg value="${arg1}"/>
+    </java>
+  </target>
+    <target name="runClient" depends="compile"
+          description="run examples">
+    <java classname="Client" classpath="${build}">
         <arg value="${arg0}"/>
         <arg value="${arg1}"/>
     </java>
