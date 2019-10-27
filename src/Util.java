@@ -107,6 +107,11 @@ public class Util {
 	    buffer.flip();//need flip 
 	    return buffer.getLong();
 	}
+
+	public static String bytesToString(byte[] b){
+		return new String(b);
+	}
+
 } 
 
 
