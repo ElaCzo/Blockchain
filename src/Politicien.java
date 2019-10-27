@@ -1,9 +1,34 @@
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class Politicien {
+import java.io.IOException;
+import java.net.UnknownHostException;
+import java.security.*;
+import java.util.List;
+
+public class Politicien extends Client {
     Block block;
+    private List<String> word;
+    private KeyPair _key;
+    private String publicKeyHexa;
 
-    ArrayList<Lettre> lettres = new ArrayList<>();
-    // serveur
+    public Politicien(String serverHost, int port) throws JSONException, UnknownHostException, IOException, NoSuchAlgorithmException, NoSuchProviderException {
+        super(serverHost, port);
+
+        ED25519 ed = new ED25519();
+        _key  = ed.genKeys();
+        publicKeyHexa = Util.bytesToHex(((EdDSAPublicKey) _key.getPublic()).getAbyte());
+    }
+
+    public void injectWord(List<String> lettres) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
+        JSONObject word = new JSONObject();
+        word.put("word", Util.listToJSONArray(lettres));
+        word.put("head", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+        word.put("politician", publicKeyHexa);
+        word.put("signature", Util.bytesToHex(Sha.signWord(_key, lettres, 0, Sha.hash_sha256(""))));
+        JSONObject inject_word = new JSONObject();
+        inject_word.put("inject_word", this.word);
+        Util.writeMsg(os, inject_word);
+    }
 }
