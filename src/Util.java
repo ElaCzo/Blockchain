@@ -84,7 +84,7 @@ public class Util {
 		return list;
 	}
 
-	public static JSONArray listToJSONArray(List<Object> liste) throws JSONException {
+	public static JSONArray listToJSONArray(List<String> liste) throws JSONException {
 		JSONArray jsonArray = new JSONArray();
 		if (liste != null) {
 			int len = liste.size();
