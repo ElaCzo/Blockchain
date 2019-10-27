@@ -72,8 +72,6 @@ public class Util {
 		return new String(hexChars);
 	}
 
-
-
 	public static List<String> JSONArrayToList(Object jsonObject) throws JSONException {
 		ArrayList<String> list = new ArrayList<String>();     
 		JSONArray jsonArray = (JSONArray)jsonObject; 
@@ -85,7 +83,18 @@ public class Util {
 		} 
 		return list;
 	}
-	
+
+	public static JSONArray listToJSONArray(List<Object> liste) throws JSONException {
+		JSONArray jsonArray = new JSONArray();
+		if (liste != null) {
+			int len = liste.size();
+			for (int i=0;i<len;i++){
+				jsonArray.put(liste.get(i));
+			}
+		}
+		return jsonArray;
+	}
+
 	public static byte[] longToBytes(long x) {
 	    ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
 	    buffer.putLong(x);
