@@ -5,7 +5,6 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -18,6 +17,38 @@ public class Auteur extends Client{
     private List<String> letter_pool;
     private KeyPair _key;
     private String publicKeyHexa;
+
+    @Override
+    public void readingInChanel(){
+        Thread recevoir = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String msg;
+                try {
+                    do {
+                        msg = Util.readMsg(is);
+                        if (Messages.isNextTurn(msg)) {
+                            tour = Messages.nextTurn(msg);
+                        }
+                        else if(Messages.isLettersBag(msg))
+                            letter_pool=Messages.lettersBag(msg);
+                        else{
+                            System.out.println("Commande serveur non reconnue.");
+                        }
+                    }while(true);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Serveur déconnecté");
+                try {
+                    closeConnection();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        recevoir.start();
+    }
 	
     public Auteur(String serverHost, int port) throws JSONException, UnknownHostException, IOException, NoSuchAlgorithmException, NoSuchProviderException {
 		super(serverHost, port);
@@ -33,9 +64,6 @@ public class Auteur extends Client{
 		JSONObject reg = new JSONObject();
 	    reg.put("register", publicKeyHexa);
         Util.writeMsg(os, reg);
-        String msgread = Util.readMsg(is);
-        letter_pool = Util.JSONArrayToList(Util.parseJSONObjectFromString(msgread).get("letters_bag"));
-  
     }
 
     
@@ -43,7 +71,6 @@ public class Auteur extends Client{
         JSONObject listen = new JSONObject();
         listen.put("listen", JSONObject.NULL);
         Util.writeMsg(os, listen);
-        
     }
     
     public void injectLetter(String c) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
@@ -59,7 +86,6 @@ public class Auteur extends Client{
     	JSONObject inject_letter = new JSONObject();
     	inject_letter.put("inject_letter", letter);
     	Util.writeMsg(os, inject_letter);
-
     }
     
     
