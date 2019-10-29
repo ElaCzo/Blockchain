@@ -30,6 +30,14 @@ public class Auteur extends Client{
                         if (Messages.isNextTurn(msg)) {
                             tour = Messages.nextTurn(msg);
                         }
+                        else if(Messages.isFullLetterPool(msg)){
+                            letter_pool=Messages.fullLetterPool(msg);
+                        }
+                        else if(Messages.isDiffLetterPool(msg)){
+                            for(String l : Messages.diffLetterPool(msg))
+                                if(!letter_pool.contains(l))
+                                    letter_pool.add(l);
+                        }
                         else if(Messages.isLettersBag(msg))
                             letter_pool=Messages.lettersBag(msg);
                         else{

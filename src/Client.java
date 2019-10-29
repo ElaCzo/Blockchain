@@ -35,7 +35,7 @@ public class Client {
 
     protected int tour;
 
-    ArrayList<Lettre> lettres;
+    private ArrayList<Lettre> lettres;
 
     public void readingInChanel(){
         Thread recevoir = new Thread(new Runnable() {
@@ -47,6 +47,18 @@ public class Client {
                         msg = Util.readMsg(is);
                         if (Messages.isNextTurn(msg)) {
                             tour = Messages.nextTurn(msg);
+                        }
+                        else if(Messages.isFullLetterPool(msg)){
+                            Messages.fullLetterPool(msg);
+                        }
+                        else if(Messages.isDiffLetterPool(msg)){
+                            Messages.diffLetterPool(msg);
+                        }
+                        else if(Messages.isFullWordPool(msg)){
+                            Messages.fullWordPool(msg);
+                        }
+                        else if(Messages.isDiffWordPool(msg)){
+                            Messages.diffWordPool(msg);
                         }
                         else{
                             System.out.println("Commande serveur non reconnue.");
@@ -90,7 +102,6 @@ public class Client {
     }
 
     public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
-
         if(args.length!=2) {
             System.out.println("usage : command serveur port");
             System.exit(-1);
@@ -99,7 +110,5 @@ public class Client {
         final String serverHost = args[0];
         final int port = Integer.valueOf(args[1]);
         Client c = new Client(serverHost, port);
-
-
     }
 }
