@@ -19,7 +19,7 @@ public class Messages {
         return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("letters_bag"));
     }
 
-    public static List<String> fullLetterPool(String msgJSON){
+    public static List<String> fullLetterPool(String msgJSON) throws JSONException {
         return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("full_letterpool"));
     }
 
@@ -27,7 +27,7 @@ public class Messages {
         return Util.parseJSONObjectFromString(msgJSON).has("full_letterpool");
     }
 
-    public static List<String> fullWordPool(String msgJSON){
+    public static List<String> fullWordPool(String msgJSON) throws JSONException {
         return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("full_wordpool"));
     }
 
@@ -35,7 +35,7 @@ public class Messages {
         return Util.parseJSONObjectFromString(msgJSON).has("full_wordpool");
     }
 
-    public static List<String> diffWordPool(String msgJSON){
+    public static List<String> diffWordPool(String msgJSON) throws JSONException {
         return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("diff_wordpool"));
     }
 
@@ -43,7 +43,7 @@ public class Messages {
         return Util.parseJSONObjectFromString(msgJSON).has("diff_wordpool");
     }
 
-    public static List<String> diffLetterPool(String msgJSON){
+    public static List<String> diffLetterPool(String msgJSON) throws JSONException {
         return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("diff_letterpool"));
     }
 
@@ -51,5 +51,11 @@ public class Messages {
         return Util.parseJSONObjectFromString(msgJSON).has("diff_letterpool");
     }
 
+    public static List<String> injectRawOP(String msgJSON) throws JSONException {
+        return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("inject_raw_op"));
+    }
 
+    public static boolean isInjectRawOP(String msgJSON) throws JSONException {
+        return Util.parseJSONObjectFromString(msgJSON).has("inject_raw_op");
+    }
 }

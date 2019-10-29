@@ -1,31 +1,11 @@
-import Pair2Pair.Message;
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import net.i2p.crypto.eddsa.EdDSAPrivateKey;
-import net.i2p.crypto.eddsa.EdDSAPublicKey;
-
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
 import java.util.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.nio.CharBuffer;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Signature;
 import java.security.SignatureException;
-import java.util.List;
-import java.util.Scanner;
 
 
 public class Client {
@@ -37,6 +17,20 @@ public class Client {
 
     private ArrayList<Lettre> lettres;
 
+    protected boolean traitementMessage(String msg) throws JSONException {
+        if (Messages.isNextTurn(msg)) {
+            tour = Messages.nextTurn(msg);
+            return true;
+        }
+        else if(Messages.isInjectRawOP(msg)){
+            System.out.println("Message reçu du serveur : "
+                    + Messages.injectRawOP(msg));
+            return true;
+        }
+
+        return false;
+    }
+
     public void readingInChanel(){
         Thread recevoir = new Thread(new Runnable() {
             @Override
@@ -45,21 +39,7 @@ public class Client {
                 try {
                     do {
                         msg = Util.readMsg(is);
-                        if (Messages.isNextTurn(msg)) {
-                            tour = Messages.nextTurn(msg);
-                        }
-                        else if(Messages.isFullLetterPool(msg)){
-                            Messages.fullLetterPool(msg);
-                        }
-                        else if(Messages.isDiffLetterPool(msg)){
-                            Messages.diffLetterPool(msg);
-                        }
-                        else if(Messages.isFullWordPool(msg)){
-                            Messages.fullWordPool(msg);
-                        }
-                        else if(Messages.isDiffWordPool(msg)){
-                            Messages.diffWordPool(msg);
-                        }
+                        if(traitementMessage(msg));
                         else{
                             System.out.println("Commande serveur non reconnue.");
                         }
