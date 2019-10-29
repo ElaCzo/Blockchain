@@ -23,41 +23,23 @@ public class Politicien extends Client {
         readingInChanel();
     }
 
-    public void readingInChanel(){
-        Thread recevoir = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                String msg;
-                try {
-                    do {
-                        msg = Util.readMsg(is);
-                        if (Messages.isNextTurn(msg)) {
-                            tour = Messages.nextTurn(msg);
-                        }
-                        else if(Messages.isFullWordPool(msg)){
-                            word_pool=Messages.fullWordPool(msg);
-                        }
-                        else if(Messages.isDiffWordPool(msg)){
-                            for(String w : Messages.diffWordPool(msg))
-                                if(!word_pool.contains(w))
-                                    word_pool.add(w);
-                        }
-                        else{
-                            System.out.println("Commande serveur non reconnue.");
-                        }
-                    }while(true);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                System.out.println("Serveur déconnecté");
-                try {
-                    closeConnection();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        recevoir.start();
+    @Override
+    protected boolean traitementMessage(String msg) throws JSONException {
+        if (Messages.isNextTurn(msg)) {
+            tour = Messages.nextTurn(msg);
+            return true;
+        }
+        else if(Messages.isFullWordPool(msg)){
+            word_pool=Messages.fullWordPool(msg);
+            return true;
+        }
+        else if(Messages.isDiffWordPool(msg)){
+            for(String w : Messages.diffWordPool(msg))
+                if(!word_pool.contains(w))
+                    word_pool.add(w);
+            return true;
+        }
+        return false;
     }
 
     public void injectWord(List<String> lettres) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
