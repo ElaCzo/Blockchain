@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.util.List;
 
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 
@@ -36,6 +37,22 @@ public class Sha {
     	
     	byte[] signature = ED25519.signv2(kp, hashed);
     	return signature;
+    }
+
+    public static byte[] signWord(KeyPair kp, List<String> l, long period, byte[] hash_head) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+
+        for(String s : l)
+            outputStream.write(s.getBytes());
+        outputStream.write(Util.longToBytes(period));
+        outputStream.write(hash_head);
+
+        EdDSAPublicKey public_k= (EdDSAPublicKey) kp.getPublic();
+        outputStream.write(public_k.getAbyte());
+        byte[] hashed = hash_sha256(outputStream.toByteArray());
+
+        byte[] signature = ED25519.signv2(kp, hashed);
+        return signature;
     }
     
     public static boolean verify(KeyPair kp, String l, long period, byte[] hash_head, byte[] sig) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, NoSuchProviderException {
