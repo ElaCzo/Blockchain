@@ -72,6 +72,12 @@ public class Auteur extends Client{
         listen.put("listen", JSONObject.NULL);
         Util.writeMsg(os, listen);
     }
+
+    public void stopListen() throws JSONException {
+        JSONObject stopListen = new JSONObject();
+        stopListen.put("stop_listen", JSONObject.NULL);
+        Util.writeMsg(os, stopListen);
+    }
     
     public void injectLetter(String c) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
     	JSONObject letter = new JSONObject();
