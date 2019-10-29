@@ -86,9 +86,21 @@ public class Auteur extends Client{
     }
 
     public void getLetterPoolSince(int period) throws JSONException {
-        JSONObject getFullLetterPool = new JSONObject();
-        getFullLetterPool.put("get_letterpool_since", period+"");
-        Util.writeMsg(os, getFullLetterPool);
+        JSONObject getLetterPoolSince = new JSONObject();
+        getLetterPoolSince.put("get_letterpool_since", period+"");
+        Util.writeMsg(os, getLetterPoolSince);
+    }
+
+    public void getFullWordPool() throws JSONException {
+        JSONObject getFullWordPool = new JSONObject();
+        getFullWordPool.put("get_full_wordpool", JSONObject.NULL);
+        Util.writeMsg(os, getFullWordPool);
+    }
+
+    public void getWordPoolSince(int period) throws JSONException {
+        JSONObject getWordPoolSince = new JSONObject();
+        getWordPoolSince.put("get_wordpool_since", period+"");
+        Util.writeMsg(os, getWordPoolSince);
     }
     
     public void injectLetter(String c) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
