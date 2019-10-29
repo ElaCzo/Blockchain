@@ -1,4 +1,6 @@
 import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -74,11 +76,22 @@ public class Client {
         readingInChanel();
     }
 
-
     public void closeConnection() throws IOException {
     	os.close();
     	is.close();
     	socketOfClient.close();
+    }
+
+    public void listen() throws JSONException {
+        JSONObject listen = new JSONObject();
+        listen.put("listen", JSONObject.NULL);
+        Util.writeMsg(os, listen);
+    }
+
+    public void stopListen() throws JSONException {
+        JSONObject stopListen = new JSONObject();
+        stopListen.put("stop_listen", JSONObject.NULL);
+        Util.writeMsg(os, stopListen);
     }
 
     public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {

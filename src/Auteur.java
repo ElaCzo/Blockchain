@@ -47,26 +47,12 @@ public class Auteur extends Client{
         _key  = ed.genKeys();
         publicKeyHexa = Util.bytesToHex(((EdDSAPublicKey) _key.getPublic()).getAbyte());
         register();
-
     }
 
     public void register() throws JSONException {
         JSONObject reg = new JSONObject();
         reg.put("register", publicKeyHexa);
         Util.writeMsg(os, reg);
-    }
-
-
-    public void listen() throws JSONException {
-        JSONObject listen = new JSONObject();
-        listen.put("listen", JSONObject.NULL);
-        Util.writeMsg(os, listen);
-    }
-
-    public void stopListen() throws JSONException {
-        JSONObject stopListen = new JSONObject();
-        stopListen.put("stop_listen", JSONObject.NULL);
-        Util.writeMsg(os, stopListen);
     }
 
     public void getFullLetterPool() throws JSONException {
@@ -126,6 +112,5 @@ public class Auteur extends Client{
         while(true) {
 
         }
-
     }
 }

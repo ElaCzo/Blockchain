@@ -19,16 +19,12 @@ public class Politicien extends Client {
         ED25519 ed = new ED25519();
         _key  = ed.genKeys();
         publicKeyHexa = Util.bytesToHex(((EdDSAPublicKey) _key.getPublic()).getAbyte());
-
-        readingInChanel();
     }
 
     @Override
     protected boolean traitementMessage(String msg) throws JSONException {
-        if (Messages.isNextTurn(msg)) {
-            tour = Messages.nextTurn(msg);
+        if (super.traitementMessage(msg))
             return true;
-        }
         else if(Messages.isFullWordPool(msg)){
             word_pool=Messages.fullWordPool(msg);
             return true;
