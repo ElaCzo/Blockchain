@@ -78,6 +78,18 @@ public class Auteur extends Client{
         stopListen.put("stop_listen", JSONObject.NULL);
         Util.writeMsg(os, stopListen);
     }
+
+    public void getFullLetterPool() throws JSONException {
+        JSONObject getFullLetterPool = new JSONObject();
+        getFullLetterPool.put("get_full_letterpool", JSONObject.NULL);
+        Util.writeMsg(os, getFullLetterPool);
+    }
+
+    public void getLetterPoolSince(int period) throws JSONException {
+        JSONObject getFullLetterPool = new JSONObject();
+        getFullLetterPool.put("get_letterpool_since", period+"");
+        Util.writeMsg(os, getFullLetterPool);
+    }
     
     public void injectLetter(String c) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
     	JSONObject letter = new JSONObject();
