@@ -6,6 +6,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +37,7 @@ public class Auteur extends Client{
         }
         else if(Messages.isLettersBag(msg)) {
             letter_pool = Messages.lettersBag(msg);
+            notifyLetterPool();
             return true;
         }
         return false;
@@ -47,6 +50,9 @@ public class Auteur extends Client{
         _key  = ed.genKeys();
         publicKeyHexa = Util.bytesToHex(((EdDSAPublicKey) _key.getPublic()).getAbyte());
         register();
+        
+        //for now
+        period = 0;
     }
 
     public void register() throws JSONException {
@@ -80,18 +86,40 @@ public class Auteur extends Client{
     }
 
     public void injectLetter(String c) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
-        JSONObject letter = new JSONObject();
-        letter.put("letter", c);
-        letter.put("period", 0);
-
-        letter.put("head", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-
-        letter.put("author", publicKeyHexa);
-        letter.put("signature", Util.bytesToHex(Sha.signLetter(_key, c, 0, Sha.hash_sha256(""))));
-        //letter.put("signature", "8b6547447108e11c0092c95e460d70f367bc137d5f89c626642e1e5f2ceb6108043d4a080223b467bb810c52b5975960eea96a2203a877f32bbd6c4dac16ec07");
+ 
+        byte[] public_key = ((EdDSAPublicKey) _key.getPublic()).getAbyte();
+        byte[] sig = ED25519.sign(_key, Sha.hashLetter(public_key, c, period, head));
+        
+        Lettre l = new Lettre(c, period, head, public_key, sig);
+        JSONObject letter = l.toJSON();
         JSONObject inject_letter = new JSONObject();
         inject_letter.put("inject_letter", letter);
         Util.writeMsg(os, inject_letter);
+    }
+    
+    private ReentrantLock lockLetterPool = new ReentrantLock();
+    private Condition letterPoolAvailableCondition = lockLetterPool.newCondition();
+    private boolean letterPoolAvailable = false;
+    public void waitForLetterPool() throws InterruptedException {
+    	lockLetterPool.lock();
+    	try {
+    		while(!letterPoolAvailable)
+    			letterPoolAvailableCondition.await();
+    	}
+    	finally {
+    		lockLetterPool.unlock();
+    	}
+    }
+    
+    public void notifyLetterPool()  {
+    	lockLetterPool.lock();
+    	try {
+    		letterPoolAvailable = true;
+    		letterPoolAvailableCondition.signalAll();
+    	}
+    	finally {
+    		lockLetterPool.unlock();
+    	}
     }
 
 
@@ -108,6 +136,12 @@ public class Auteur extends Client{
 
 
         a.listen();
+        try {
+			a.waitForLetterPool();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         a.injectLetter(a.letter_pool.remove(0));
         while(true) {
 

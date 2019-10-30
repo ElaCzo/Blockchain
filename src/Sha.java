@@ -6,6 +6,7 @@ import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.List;
 
@@ -24,35 +25,26 @@ public class Sha {
         return hash;
     }
     
-    public static byte[] signLetter(KeyPair kp, String l, long period, byte[] hash_head) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+    public static byte[] hashLetter(byte[] public_key, String l, long period, byte[] hash_head) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException {
     	ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 
     	outputStream.write( l.getBytes() );
     	outputStream.write(Util.longToBytes(period));
     	outputStream.write(hash_head);
-    	
-    	EdDSAPublicKey public_k= (EdDSAPublicKey) kp.getPublic();
-    	outputStream.write(public_k.getAbyte());
+    	outputStream.write(public_key);
     	byte[] hashed = hash_sha256(outputStream.toByteArray());
-    	
-    	byte[] signature = ED25519.signv2(kp, hashed);
-    	return signature;
+    	return hashed;
     }
 
-    public static byte[] signWord(KeyPair kp, List<String> l, long period, byte[] hash_head) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+    public static byte[] hashWord(byte[] public_key, List<Lettre> letters, byte[] head) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 
-        for(String s : l)
-            outputStream.write(s.getBytes());
-        outputStream.write(Util.longToBytes(period));
-        outputStream.write(hash_head);
-
-        EdDSAPublicKey public_k= (EdDSAPublicKey) kp.getPublic();
-        outputStream.write(public_k.getAbyte());
+        for(Lettre l : letters)
+            outputStream.write(l.toByte());
+        outputStream.write(head);
+        outputStream.write(public_key);
         byte[] hashed = hash_sha256(outputStream.toByteArray());
-
-        byte[] signature = ED25519.signv2(kp, hashed);
-        return signature;
+        return hashed;
     }
     
     public static boolean verify(KeyPair kp, String l, long period, byte[] hash_head, byte[] sig) throws IOException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, NoSuchProviderException {
@@ -77,7 +69,7 @@ public class Sha {
     	
         ED25519 ed = new ED25519();
         KeyPair kp = ed.genKeys();
-        byte[] sig = signLetter(kp, l, period, hash_head);
+        byte[] sig = hashLetter(((EdDSAPublicKey) kp.getPublic()).getAbyte(), l, period, hash_head);
         System.out.println(Util.bytesToHex(sig));
         
         System.out.println(verify(kp, l, period, hash_head, sig));

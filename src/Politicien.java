@@ -11,15 +11,13 @@ public class Politicien extends Client {
     Block block;
     private List<String> word_pool;
     private KeyPair _key;
-    private String publicKeyHexa;
 
     public Politicien(String serverHost, int port) throws JSONException, UnknownHostException, IOException, NoSuchAlgorithmException, NoSuchProviderException {
         super(serverHost, port);
 
         ED25519 ed = new ED25519();
         _key  = ed.genKeys();
-        publicKeyHexa = Util.bytesToHex(((EdDSAPublicKey) _key.getPublic()).getAbyte());
-    }
+     }
 
     @Override
     protected boolean traitementMessage(String msg) throws JSONException {
@@ -38,12 +36,11 @@ public class Politicien extends Client {
         return false;
     }
 
-    public void injectWord(List<String> lettres) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
-        JSONObject word = new JSONObject();
-        word.put("word", Util.listToJSONArray(lettres));
-        word.put("head", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-        word.put("politician", publicKeyHexa);
-        word.put("signature", Util.bytesToHex(Sha.signWord(_key, lettres, 0, Sha.hash_sha256(""))));
+    public void injectWord(List<Lettre> lettres) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
+        byte[] public_key = ((EdDSAPublicKey)_key.getPublic()).getAbyte();
+        byte[] sig = ED25519.sign(_key, Sha.hashWord(public_key, lettres, head));
+        Mot m = new Mot(lettres, head, public_key, sig);
+        JSONObject word = m.toJSON();
         JSONObject inject_word = new JSONObject();
         inject_word.put("inject_word", word);
         Util.writeMsg(os, inject_word);

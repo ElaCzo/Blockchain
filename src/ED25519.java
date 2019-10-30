@@ -35,16 +35,8 @@ public class ED25519{
 		return gen.generateKeyPair();
 	}
 	
-	public static byte[] sign(KeyPair kp, byte[] msg) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-		Signature sig = Signature.getInstance("ED_25519");
-		sig.initSign(kp.getPrivate());
-		sig.update(msg);
-		byte[] s = sig.sign();
-		return s;
-	}
 	
-	
-	public static byte[] signv2(KeyPair kp, byte[] msg) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	public static byte[] sign(KeyPair kp, byte[] msg) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 	    EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519);
 	    //Signature sgr = Signature.getInstance("EdDSA", "I2P");
 	    Signature sgr = new EdDSAEngine(MessageDigest.getInstance(spec.getHashAlgorithm()));

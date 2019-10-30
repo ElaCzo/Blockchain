@@ -15,13 +15,12 @@ public class Client {
     protected DataOutputStream os;
     protected DataInputStream is;
 
-    protected int tour;
-
-    private ArrayList<Lettre> lettres;
+    protected int period;
+    protected byte[] head;
 
     protected boolean traitementMessage(String msg) throws JSONException {
         if (Messages.isNextTurn(msg)) {
-            tour = Messages.nextTurn(msg);
+            period = Messages.nextTurn(msg);
             return true;
         }
         else if(Messages.isInjectRawOP(msg)){
@@ -71,7 +70,8 @@ public class Client {
         // Input stream at Client (Receive data from the server).
         is = new DataInputStream(socketOfClient.getInputStream());
 
-        lettres = new ArrayList<Lettre>();
+        //for now
+        head = Sha.hash_sha256("");
 
         readingInChanel();
     }
