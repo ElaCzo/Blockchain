@@ -17,7 +17,7 @@ public class Politicien extends Pair {
     private ArrayList<Lettre> lettres;
     private ArrayList<String> dict;
 
-    private int diff = 20;
+    private int diff = 16;
 
     public Politicien(ArrayList<String> dict) {
         super();
@@ -29,7 +29,7 @@ public class Politicien extends Pair {
     }
 
     public synchronized void addLettre(Lettre l) {
-        if (!this.lettres.contains(l)) {
+        if (!this.lettres.contains(l) && l.getBlockhash() == blockchain.getLastHash()) {
             synchronized (lettres) {
                 lettres.add(l);
             }
@@ -55,7 +55,8 @@ public class Politicien extends Pair {
 
                         for (Lettre lettre : lettres) {
 
-                            if (c == lettre.getC() && !Lettre.contain(lettre.getAuteurId(), lmot)) {
+                            if (c == lettre.getC() && !Lettre.contain(lettre.getAuteurId(), lmot)
+                                    && lettre.getBlockhash() == blockchain.getLastHash()) {
                                 l = lettre;
                                 break;
                             }
@@ -105,11 +106,12 @@ public class Politicien extends Pair {
 
             if (fini) {
                 // for (Pair pair : liens) {
-                //     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+                // if (m.getAuteurID() != pair.getPairId() &&
+                // !pair.getMessagesRecus().contains(m.getId())) {
 
-                //         pair.sendMessage(new Message(blockchain));
+                // pair.sendMessage(new Message(blockchain));
 
-                //     }
+                // }
 
                 // }
                 return;
@@ -197,8 +199,6 @@ public class Politicien extends Pair {
 
                     }
 
-                    System.out.println("FIN TRUVEE : " + id + " ( MID : " + m.getId() + " ) ");
-
                     fini = true;
 
                 }
@@ -223,7 +223,9 @@ public class Politicien extends Pair {
 
         while (!fini) {
 
-            if (blockchain.size() < 20 && lettres.size() > 5) {
+            Blockchain blo = null;
+
+            if (blockchain.size() < 20 && lettres.size() > 10) {
 
                 Block b = createMot();
 
@@ -231,17 +233,16 @@ public class Politicien extends Pair {
 
                 if (b != null) {
 
-                    blockchain.addBlock(b);
+                    blo = new Blockchain(blockchain.getChain());
+                    blo.addBlock(b);
 
-                }
-
-                if (!blockchain.isValid()) {
-                    blockchain = new Blockchain();
                 }
             }
 
             synchronized (received_block) {
-                received_block.add(blockchain);
+                if ( blo!= null && blo.isValid()) {
+                    received_block.add(blo);
+                }
 
                 for (Blockchain block : received_block) {
                     assert (block != null);
@@ -262,8 +263,9 @@ public class Politicien extends Pair {
                 pair.sendMessage(new Message(new Blockchain(blockchain.getChain()), id));
             }
 
-            System.out.println("POLITICIEN : " + id + " taille Block " + blockchain.getChain().size() + " nb lettres :"
-                    + blockchain.getChars().size() + " value " + blockchain.value());
+            // System.out.println("POLITICIEN : " + id + " taille Block " +
+            // blockchain.getChain().size() + " nb lettres :"
+            // + blockchain.getChars().size() + " value " + blockchain.value());
 
         }
 

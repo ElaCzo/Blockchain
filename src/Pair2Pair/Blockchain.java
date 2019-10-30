@@ -20,10 +20,14 @@ public class Blockchain {
     }
 
     public int getLastHash() {
-        if (size() == 0) {
+
+        // System.out.println(chain.size());
+        try {
+            return chain.get(chain.size() - 1).getHash();
+
+        } catch (IndexOutOfBoundsException e) {
             return 0;
         }
-        return chain.get(chain.size() - 1).getHash();
     }
 
     public int size() {
@@ -36,9 +40,10 @@ public class Blockchain {
     }
 
     public boolean isValid() {
-        if (size() > 20) {
+        if (size() >= 21) {
             return false;
         }
+
         return true;
     }
 
@@ -215,8 +220,13 @@ public class Blockchain {
 
     @Override
     public String toString() {
-        // TODO
-        return null;
+        String sortie = new String();
+        sortie += "[";
+        for (Block block : chain) {
+            sortie += block.toString();
+        }
+        sortie += "]";
+        return sortie;
     }
 
 }

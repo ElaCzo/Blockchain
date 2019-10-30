@@ -28,6 +28,13 @@ public class Lettre {
 
     }
 
+    /**
+     * @return the blockhash
+     */
+    public int getBlockhash() {
+        return blockhash;
+    }
+
     public static boolean contain(int auteurId, ArrayList<Lettre> list) {
         for (Lettre lettre : list) {
             if (lettre.auteurId == auteurId)

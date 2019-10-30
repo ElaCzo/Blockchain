@@ -10,7 +10,7 @@ public class Auteur extends Pair {
 
     private ArrayList<Character> pool;
 
-    private int diff = 8;
+    private int diff = 12;
 
     public Auteur() {
         super();
@@ -56,9 +56,8 @@ public class Auteur extends Pair {
             switch (m.getType()) {
             case STRING:
                 String message = m.getContenu();
-                // System.out.println("AUTEUR : " + id + " receive " + message + " from " +
-                // m.getAuteurID() + " ( MID : "
-                // + m.getId() + " ) ");
+                System.out.println("AUTEUR : " + id + " receive " + message + " from " + m.getAuteurID() + " ( MID : "
+                        + m.getId() + " ) ");
 
                 for (Pair pair : liens) {
                     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
@@ -72,9 +71,8 @@ public class Auteur extends Pair {
 
                 this.pool = new ArrayList<>(m.getPool());
 
-                // System.out.println("AUTEUR : " + id + " receive letter pool from " +
-                // m.getAuteurID() + " ( MID : "
-                // + m.getId() + " ) ");
+                System.out.println("AUTEUR : " + id + " receive letter pool from " + m.getAuteurID() + " ( MID : "
+                        + m.getId() + " ) ");
 
                 for (Pair pair : liens) {
                     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
@@ -89,9 +87,8 @@ public class Auteur extends Pair {
                 }
 
             case LETTRE:
-                // System.out.println("AUTEUR : " + id + " receive " + m.getLettre().getC() + "
-                // from " + m.getAuteurID()
-                // + " ( MID : " + m.getId() + " ) ");
+                // System.out.println("AUTEUR : " + id + " receive " + m.getLettre().getC() + "from " + m.getAuteurID()
+                //         + " ( MID : " + m.getId() + " ) ");
 
                 for (Pair pair : liens) {
                     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
@@ -112,18 +109,11 @@ public class Auteur extends Pair {
 
                     if (m.getBlock().isValid()) {
 
-                        System.out.println("Auteur  : " + id + " valid ");
-
                         int value = blockchain.value();
-                        System.out.println("Auteur  : " + id + " valid | prev value " + blockchain.value()
-                                + " proposed value " + m.getBlock().value());
 
                         if (value <= m.getBlock().value()) {
                             blockchain = m.getBlock();
-                            if (blockchain.size() >= 20 && fini == false) {
-                                System.out.println("Auteur  : " + id + " check fin ");
-
-                                System.out.println("Auteur  : " + id + " find fin ");
+                            if (blockchain.size() == 20 && fini == false) {
 
                                 for (Pair pair : liens) {
 

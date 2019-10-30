@@ -73,6 +73,13 @@ public abstract class Pair extends Thread {
         messagesRecus.add(id);
     }
 
+    /**
+     * @return the blockchain
+     */
+    public Blockchain getBlockchain() {
+        return blockchain;
+    }
+
     public abstract void sendMessage(Message m);
 
     @Override

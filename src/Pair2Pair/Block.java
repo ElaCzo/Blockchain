@@ -65,4 +65,14 @@ public class Block {
 
     }
 
+    public String toString() {
+        String sortie = new String();
+        sortie += "{";
+        sortie += mot;
+        // sortie += " ,AuteurID :" + AuteurID ;
+        // sortie += " ,nonce :" + nonce ;
+        sortie += "}";
+        return sortie;
+    }
+
 }

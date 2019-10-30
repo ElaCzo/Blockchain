@@ -119,6 +119,11 @@ public class P2P {
         }
 
         for (Pair pair : pairs) {
+            System.out.println(pair.getBlockchain().toString());
+
+        }
+
+        for (Pair pair : pairs) {
             try {
                 System.out.println("Pair : " + pair.getPairId() + " score : " + pair.getScore());
             } catch (Exception e) {
