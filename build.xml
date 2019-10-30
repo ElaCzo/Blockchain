@@ -19,12 +19,17 @@
   <target name="compile" depends="init"
         description="compile the source " >
     <!-- Compile the java code from ${src} into ${build} -->
-    <javac debug="true" srcdir="${src}" excludes="" destdir="${build}"  includeantruntime="false" />
+    <javac debug="true" srcdir="${src}" excludes="" destdir="${build}"  includeantruntime="false" >
+    <classpath>
+      <pathelement location="jar/java-json.jar"/>
+    </classpath>
+    </javac>
   </target>
 
   <target name="runP2P" depends="compile"
           description="run examples">
     <java classname="Pair2Pair.P2P" classpath="${build}">
+        
         <arg value="${arg0}"/>
         <arg value="${arg1}"/>
     </java>
@@ -32,6 +37,9 @@
     <target name="runClient" depends="compile"
           description="run examples">
     <java classname="Client" classpath="${build}">
+        <classpath>
+          <pathelement location="jar/java-json.jar"/>
+        </classpath>
         <arg value="${arg0}"/>
         <arg value="${arg1}"/>
     </java>

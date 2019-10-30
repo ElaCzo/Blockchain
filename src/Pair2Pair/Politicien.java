@@ -15,7 +15,6 @@ public class Politicien extends Pair {
     private ArrayList<Blockchain> received_block;
 
     private ArrayList<Lettre> lettres;
-    private ArrayList<Lettre> lettresRec;
     private ArrayList<String> dict;
 
     private int diff = 20;
@@ -24,19 +23,16 @@ public class Politicien extends Pair {
         super();
         received_block = new ArrayList<>();
         this.lettres = new ArrayList<>();
-        this.lettresRec = new ArrayList<>();
 
         this.dict = new ArrayList<>(dict);
         Collections.shuffle(dict);
     }
 
     public synchronized void addLettre(Lettre l) {
-        if (!this.lettresRec.contains(l)) {
+        if (!this.lettres.contains(l)) {
             synchronized (lettres) {
                 lettres.add(l);
-                lettresRec.add(l);
             }
-
         }
     }
 
@@ -107,12 +103,24 @@ public class Politicien extends Pair {
 
             addMessageId(m.getId());
 
+            if (fini) {
+                // for (Pair pair : liens) {
+                //     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+
+                //         pair.sendMessage(new Message(blockchain));
+
+                //     }
+
+                // }
+                return;
+
+            }
+
             switch (m.getType()) {
             case STRING:
                 String message = m.getContenu();
-                // System.out.println("POLITICIEN : " + id + " receive " + message + " from " +
-                // m.getAuteurID()
-                // + " ( MID : " + m.getId() + " ) ");
+                System.out.println("POLITICIEN : " + id + " receive " + message + " from " + m.getAuteurID()
+                        + " ( MID : " + m.getId() + " ) ");
 
                 for (Pair pair : liens) {
                     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
@@ -149,19 +157,27 @@ public class Politicien extends Pair {
                     }
                 }
 
-                synchronized (this) {
-                    System.out.println("POLITICIEN : " + id + " wakeup ");
-
-                    this.notifyAll();
-                }
-
                 break;
 
             case BLOCK:
 
-                synchronized (received_block) {
+                if (fini) {
+                    for (Pair pair : liens) {
+                        if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
-                    received_block.add(m.getBlock());
+                            pair.sendMessage(new Message(blockchain));
+
+                        }
+
+                    }
+                    return;
+
+                } else {
+
+                    synchronized (received_block) {
+
+                        received_block.add(m.getBlock());
+                    }
                 }
 
                 break;
@@ -171,7 +187,7 @@ public class Politicien extends Pair {
                 System.out.println("POLITICIEN : " + id + " receive Fin from " + m.getAuteurID() + " nb lettres "
                         + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
 
-                if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value() && fini == false) {
+                if (m.getBlock().isValid()) {
                     for (Pair pair : liens) {
                         if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
@@ -180,22 +196,22 @@ public class Politicien extends Pair {
                         }
 
                     }
+
                     System.out.println("FIN TRUVEE : " + id + " ( MID : " + m.getId() + " ) ");
 
                     fini = true;
 
                 }
 
-                synchronized (this) {
-                    System.out.println("POLITICIEN : " + id + " wakeup ");
-
-                    this.notifyAll();
-                }
-
                 break;
 
             default:
                 break;
+            }
+            synchronized (this) {
+                // System.out.println("POLITICIEN : " + id + " wakeup lettre");
+
+                this.notifyAll();
             }
         }
 
@@ -205,90 +221,72 @@ public class Politicien extends Pair {
     public void run() {
         System.out.println("POLITICIEN : " + id + " start");
 
-        while (lettres.size() < 10) {
+        while (!fini) {
 
-            try {
-
-                synchronized (this) {
-                    System.out.println("POLITICIEN : " + id + " attend ");
-
-                    this.wait();
-                }
-
-            } catch (Exception e) {
-                // TODO: handle exception
-            }
-
-        }
-
-        while (fini == false) {
-
-            while (!lettres.isEmpty() || lettres.size() > 0) {
+            if (blockchain.size() < 20 && lettres.size() > 5) {
 
                 Block b = createMot();
-                // System.out.println("POLITICIEN : " + id + " a fini Block | taille du mot " +
-                // b.getMot().length() + "/"
-                // + b.getLettres().size());
+
+                System.out.println("POLITICIEN : " + id + " a fait Block | size: " + blockchain.size());
 
                 if (b != null) {
 
-                    blockchain.add(b);
+                    blockchain.addBlock(b);
+
                 }
 
                 if (!blockchain.isValid()) {
                     blockchain = new Blockchain();
                 }
-
-                synchronized (received_block) {
-                    for (Blockchain block : received_block) {
-                        assert (block != null);
-                        if (block.value() > blockchain.value()) {
-                            blockchain = block;
-                        }
-                    }
-
-                    received_block.clear();
-                }
-
-                synchronized (lettres) {
-
-                    lettres = new ArrayList<>(lettresRec);
-
-                    ArrayList<Lettre> l = new ArrayList<>();
-
-                    for (Block block : blockchain.getChain()) {
-                        l.addAll(block.getLettres());
-                    }
-
-                    lettres.removeAll(l);
-
-                }
-                for (Pair pair : liens) {
-                    pair.sendMessage(new Message(new Blockchain(blockchain.getChain()), id));
-                }
-
-                System.out.println("POLITICIEN : " + id + " taille Block " + blockchain.getChain().size()
-                        + " nb lettres :" + blockchain.getChars().size() + "  lettres restantes " + lettres.size() + "/"
-                        + lettresRec.size() + " value " + blockchain.value());
-
             }
 
-            if (fini == false) {
+            synchronized (received_block) {
+                received_block.add(blockchain);
 
-                synchronized (this) {
-
-                    System.out.println("POLITICIEN : " + id + " attend ");
-                    try {
-
-                        this.wait();
-                    } catch (Exception e) {
-                        // TODO: handle exception
+                for (Blockchain block : received_block) {
+                    assert (block != null);
+                    if (block.isValid() && block.value() > blockchain.value()) {
+                        blockchain = block;
                     }
                 }
+
+                received_block.clear();
             }
+
+            synchronized (lettres) {
+
+                lettres.clear();
+
+            }
+            for (Pair pair : liens) {
+                pair.sendMessage(new Message(new Blockchain(blockchain.getChain()), id));
+            }
+
+            System.out.println("POLITICIEN : " + id + " taille Block " + blockchain.getChain().size() + " nb lettres :"
+                    + blockchain.getChars().size() + " value " + blockchain.value());
+
         }
 
-        System.out.println("POLITICIEN : " + id + " a fini | B taille : " + blockchain.getChain().size());
+        if (!fini) {
+
+            synchronized (this) {
+
+                // System.out.println("POLITICIEN : " + id + " attend lettre");
+                try {
+
+                    this.wait();
+                } catch (Exception e) {
+                    // TODO: handle exception
+                }
+            }
+
+        } else {
+            System.out.println("POLITICIEN : " + id + " a fini | B taille : " + blockchain.getChain().size());
+
+            return;
+        }
+
+        System.out.println("POLITICIEN : " + id + " a fini | B taille : " + blockchain.size());
 
     }
 }

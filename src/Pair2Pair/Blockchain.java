@@ -19,16 +19,26 @@ public class Blockchain {
         chain = new ArrayList<>(bl);
     }
 
+    public int getLastHash() {
+        if (size() == 0) {
+            return 0;
+        }
+        return chain.get(chain.size() - 1).getHash();
+    }
+
     public int size() {
         return chain.size();
     }
 
-    public boolean add(Block blo) {
+    public boolean addBlock(Block blo) {
         bvalue = 0;
         return chain.add(blo);
     }
 
     public boolean isValid() {
+        if (size() > 20) {
+            return false;
+        }
         return true;
     }
 

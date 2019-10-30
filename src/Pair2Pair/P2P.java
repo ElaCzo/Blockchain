@@ -65,14 +65,14 @@ public class P2P {
             e.printStackTrace();
         }
 
-        int nbPairs = 10;
+        int nbPairs = 40;
 
         Pair[] pairs = new Pair[nbPairs];
 
         Random rnd = new Random();
 
         ArrayList<Character> pool = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             pool.add((char) (rnd.nextInt(26) + 'a'));
         }
 

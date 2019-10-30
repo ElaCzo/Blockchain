@@ -38,13 +38,12 @@ public class Auteur extends Pair {
         Random rnd = new Random();
         int random = rnd.nextInt(pool.size());
         int nonce = 0;
-        Lettre l = new Lettre(pool.get(random), id, nonce);
+        Lettre l = new Lettre(pool.get(random), id, blockchain.getLastHash(), nonce);
         while (Integer.numberOfLeadingZeros(l.getHash()) < diff) {
             nonce++;
-            l = new Lettre(pool.get(random), id, nonce);
+            l = new Lettre(pool.get(random), id, blockchain.getLastHash(), nonce);
 
         }
-        pool.remove(random);
         sendMessage(new Message(l, id));
     }
 
@@ -105,31 +104,25 @@ public class Auteur extends Pair {
 
             case BLOCK:
 
-                System.out.println("Auteur : " + id + " receive block from " + m.getAuteurID() + " nb lettres "
-                        + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
+                if (fini) {
+                    System.out.println("Auteur : " + id + " receive block from " + m.getAuteurID() + " | size : "
+                            + m.getBlock().size() + " ( MID : " + m.getId() + " ) ");
 
-                if (m.getBlock().isValid()) {
+                } else {
 
-                    System.out.println("Auteur  : " + id + " valid ");
+                    if (m.getBlock().isValid()) {
 
-                    int value = blockchain.value();
-                    System.out.println("Auteur  : " + id + " valid | prev value " + blockchain.value()
-                            + " proposed value " + m.getBlock().value());
+                        System.out.println("Auteur  : " + id + " valid ");
 
-                    if (value <= m.getBlock().value()) {
-                        blockchain = m.getBlock();
-                        ArrayList<Character> ch = m.getBlock().getChars();
-                        if (blockchain.size() > 20 && fini == false) {
-                            System.out.println("Auteur  : " + id + " check fin ");
+                        int value = blockchain.value();
+                        System.out.println("Auteur  : " + id + " valid | prev value " + blockchain.value()
+                                + " proposed value " + m.getBlock().value());
 
-                            boolean val = true;
-                            for (Character character : pool) {
-                                if (!ch.contains(pool)) {
-                                    val = false;
-                                    break;
-                                }
-                            }
-                            if (val) {
+                        if (value <= m.getBlock().value()) {
+                            blockchain = m.getBlock();
+                            if (blockchain.size() >= 20 && fini == false) {
+                                System.out.println("Auteur  : " + id + " check fin ");
+
                                 System.out.println("Auteur  : " + id + " find fin ");
 
                                 for (Pair pair : liens) {
@@ -141,22 +134,36 @@ public class Auteur extends Pair {
                                 return;
                             }
 
-                        }
-                        for (Pair pair : liens) {
+                            for (Pair pair : liens) {
 
-                            pair.sendMessage(m);
+                                pair.sendMessage(m);
+                            }
                         }
                     }
-                }
 
+                }
                 break;
 
             case FINI:
 
+                if (fini) {
+
+                    for (Pair pair : liens) {
+                        if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+
+                            pair.sendMessage(m);
+
+                        }
+
+                    }
+                    return;
+
+                }
+
                 System.out.println("Auteur : " + id + " receive Fin from " + m.getAuteurID() + " nb lettres "
                         + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
 
-                if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value() && fini == false) {
+                if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value() && !fini) {
                     for (Pair pair : liens) {
                         if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
@@ -195,10 +202,12 @@ public class Auteur extends Pair {
         } catch (InterruptedException e) {
         }
 
-        while (!pool.isEmpty() && pool.size() > 0) {
+        while (!fini) {
 
             generateLettre();
         }
 
+        System.out.println("Auteur : " + id + " a fini | B taille : " + blockchain.size());
     }
+
 }
