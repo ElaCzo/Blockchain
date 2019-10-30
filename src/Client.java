@@ -4,6 +4,8 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.InvalidKeyException;
@@ -15,13 +17,24 @@ public class Client {
     protected DataOutputStream os;
     protected DataInputStream is;
 
-    protected int tour;
+    protected long period;
+    protected byte[] head;
+    
+    protected ReentrantLock lockNextPeriod = new ReentrantLock();
+    protected Condition isNextPeriodCondition = lockNextPeriod.newCondition();
+    protected boolean isNextPeriod = false;
+    public boolean isNextPeriod() {
+		return isNextPeriod;
+	}
 
-    private ArrayList<Lettre> lettres;
+	public void setNextPeriod(boolean isNextPeriod) {
+		this.isNextPeriod = isNextPeriod;
+	}
 
     protected boolean traitementMessage(String msg) throws JSONException {
         if (Messages.isNextTurn(msg)) {
-            tour = Messages.nextTurn(msg);
+            period = Messages.nextTurn(msg);
+			UtilSynchro.notifyCond(lockNextPeriod, isNextPeriodCondition, this::setNextPeriod);
             return true;
         }
         else if(Messages.isInjectRawOP(msg)){
@@ -71,7 +84,8 @@ public class Client {
         // Input stream at Client (Receive data from the server).
         is = new DataInputStream(socketOfClient.getInputStream());
 
-        lettres = new ArrayList<Lettre>();
+        //for now
+        head = Sha.hash_sha256("");
 
         readingInChanel();
     }
@@ -93,8 +107,44 @@ public class Client {
         stopListen.put("stop_listen", JSONObject.NULL);
         Util.writeMsg(os, stopListen);
     }
+    
+    public void getFullLetterPool() throws JSONException {
+        JSONObject getFullLetterPool = new JSONObject();
+        getFullLetterPool.put("get_full_letterpool", JSONObject.NULL);
+        Util.writeMsg(os, getFullLetterPool);
+    }
 
-    public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+    public void getLetterPoolSince(int period) throws JSONException {
+        JSONObject getLetterPoolSince = new JSONObject();
+        getLetterPoolSince.put("get_letterpool_since", period+"");
+        Util.writeMsg(os, getLetterPoolSince);
+    }
+
+    public void getFullWordPool() throws JSONException {
+        JSONObject getFullWordPool = new JSONObject();
+        getFullWordPool.put("get_full_wordpool", JSONObject.NULL);
+        Util.writeMsg(os, getFullWordPool);
+    }
+
+    public void getWordPoolSince(int period) throws JSONException {
+        JSONObject getWordPoolSince = new JSONObject();
+        getWordPoolSince.put("get_wordpool_since", period+"");
+        Util.writeMsg(os, getWordPoolSince);
+    }
+    
+    protected ReentrantLock fullLetterPool = new ReentrantLock();
+    protected Condition fullLetterPoolCond = fullLetterPool.newCondition();
+    protected boolean fullLetterPoolAvailable = false;
+
+	public boolean isFullLetterPoolAvailable() {
+		return fullLetterPoolAvailable;
+	}
+
+	public void setFullLetterPoolAvailable(boolean fullLetterPoolAvailable) {
+		this.fullLetterPoolAvailable = fullLetterPoolAvailable;
+	}
+
+	public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
         if(args.length!=2) {
             System.out.println("usage : command serveur port");
             System.exit(-1);

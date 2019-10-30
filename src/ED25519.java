@@ -14,6 +14,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 
 import net.i2p.crypto.eddsa.EdDSAEngine;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.EdDSASecurityProvider;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
@@ -35,16 +36,8 @@ public class ED25519{
 		return gen.generateKeyPair();
 	}
 	
-	public static byte[] sign(KeyPair kp, byte[] msg) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-		Signature sig = Signature.getInstance("ED_25519");
-		sig.initSign(kp.getPrivate());
-		sig.update(msg);
-		byte[] s = sig.sign();
-		return s;
-	}
 	
-	
-	public static byte[] signv2(KeyPair kp, byte[] msg) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	public static byte[] sign(KeyPair kp, byte[] msg) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 	    EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519);
 	    //Signature sgr = Signature.getInstance("EdDSA", "I2P");
 	    Signature sgr = new EdDSAEngine(MessageDigest.getInstance(spec.getHashAlgorithm()));
@@ -60,9 +53,7 @@ public class ED25519{
 		
 		EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519);
         Signature sgr = new EdDSAEngine(MessageDigest.getInstance(spec.getHashAlgorithm()));
-  
         sgr.initVerify(kp.getPublic());
-
         sgr.update(msg);
         return sgr.verify(sig);
 	}

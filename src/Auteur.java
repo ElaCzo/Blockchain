@@ -6,6 +6,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.util.List;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +16,7 @@ import net.i2p.crypto.eddsa.EdDSAPublicKey;
 
 public class Auteur extends Client{
 
-    private List<String> letter_pool;
+    private List<String> letter_bag;
     private KeyPair _key;
     private String publicKeyHexa;
 
@@ -22,20 +24,27 @@ public class Auteur extends Client{
     protected boolean traitementMessage(String msg) throws JSONException {
         if(super.traitementMessage(msg))
             return true;
+        /*
         else if(Messages.isFullLetterPool(msg)){
-            letter_pool=Messages.fullLetterPool(msg);
+            letter_bag=Messages.fullLetterPool(msg);
             return true;
         }
+        /*
         else if(Messages.isDiffLetterPool(msg)){
             for(String l : Messages.diffLetterPool(msg)) {
                 if (!letter_pool.contains(l))
                     letter_pool.add(l);
             }
             return true;
-        }
+        }*/
         else if(Messages.isLettersBag(msg)) {
-            letter_pool = Messages.lettersBag(msg);
+            letter_bag = Messages.lettersBag(msg);
+            UtilSynchro.notifyCond(lockLetterPool, letterPoolAvailableCondition, this::setLetterPoolAvailable);
+            //notifyLetterPool();
             return true;
+        }
+        else if(Messages.isInjectLetter(msg)) {
+        	//do nothing
         }
         return false;
     }
@@ -47,6 +56,9 @@ public class Auteur extends Client{
         _key  = ed.genKeys();
         publicKeyHexa = Util.bytesToHex(((EdDSAPublicKey) _key.getPublic()).getAbyte());
         register();
+        
+        //for now
+        period = 0;
     }
 
     public void register() throws JSONException {
@@ -55,44 +67,52 @@ public class Auteur extends Client{
         Util.writeMsg(os, reg);
     }
 
-    public void getFullLetterPool() throws JSONException {
-        JSONObject getFullLetterPool = new JSONObject();
-        getFullLetterPool.put("get_full_letterpool", JSONObject.NULL);
-        Util.writeMsg(os, getFullLetterPool);
-    }
 
-    public void getLetterPoolSince(int period) throws JSONException {
-        JSONObject getLetterPoolSince = new JSONObject();
-        getLetterPoolSince.put("get_letterpool_since", period+"");
-        Util.writeMsg(os, getLetterPoolSince);
-    }
-
-    public void getFullWordPool() throws JSONException {
-        JSONObject getFullWordPool = new JSONObject();
-        getFullWordPool.put("get_full_wordpool", JSONObject.NULL);
-        Util.writeMsg(os, getFullWordPool);
-    }
-
-    public void getWordPoolSince(int period) throws JSONException {
-        JSONObject getWordPoolSince = new JSONObject();
-        getWordPoolSince.put("get_wordpool_since", period+"");
-        Util.writeMsg(os, getWordPoolSince);
-    }
 
     public void injectLetter(String c) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
-        JSONObject letter = new JSONObject();
-        letter.put("letter", c);
-        letter.put("period", 0);
-
-        letter.put("head", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-
-        letter.put("author", publicKeyHexa);
-        letter.put("signature", Util.bytesToHex(Sha.signLetter(_key, c, 0, Sha.hash_sha256(""))));
-        //letter.put("signature", "8b6547447108e11c0092c95e460d70f367bc137d5f89c626642e1e5f2ceb6108043d4a080223b467bb810c52b5975960eea96a2203a877f32bbd6c4dac16ec07");
+        byte[] public_key = ((EdDSAPublicKey) _key.getPublic()).getAbyte();
+        byte[] sig = ED25519.sign(_key, Sha.hashLetter(public_key, c, period, head));
+        Lettre l = new Lettre(c, period, head, public_key, sig);
+        JSONObject letter = l.toJSON();
         JSONObject inject_letter = new JSONObject();
         inject_letter.put("inject_letter", letter);
         Util.writeMsg(os, inject_letter);
     }
+    
+    private ReentrantLock lockLetterPool = new ReentrantLock();
+    private Condition letterPoolAvailableCondition = lockLetterPool.newCondition();
+    private boolean letterPoolAvailable = false;
+    
+    public void setLetterPoolAvailable(boolean b) {
+    	letterPoolAvailable = true;
+    }   
+    public boolean getLetterPoolAvailable() {
+    	return letterPoolAvailable;
+    }
+    public void waitForLetterPool() throws InterruptedException {
+    	lockLetterPool.lock();
+    	try {
+    		while(!letterPoolAvailable)
+    			letterPoolAvailableCondition.await();
+    	}
+    	finally {
+    		lockLetterPool.unlock();
+    	}
+    }
+    
+    public void notifyLetterPool()  {
+    	lockLetterPool.lock();
+    	try {
+    		letterPoolAvailable = true;
+    		letterPoolAvailableCondition.signalAll();
+    	}
+    	finally {
+    		lockLetterPool.unlock();
+    	}
+    }    
+    private ReentrantLock lockFullWordPool = new ReentrantLock();
+    private Condition fullWordPoolAvailableCondition = lockLetterPool.newCondition();
+    private boolean fullWordPoolAvailable = false;
 
 
     public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
@@ -108,9 +128,21 @@ public class Auteur extends Client{
 
 
         a.listen();
-        a.injectLetter(a.letter_pool.remove(0));
+        try {
+			UtilSynchro.waitForCond(a.lockLetterPool, a.letterPoolAvailableCondition, a::getLetterPoolAvailable, a::setLetterPoolAvailable);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
         while(true) {
-
+        	a.injectLetter(a.letter_bag.remove(0));
+        	a.getFullLetterPool();
+        	try {
+				UtilSynchro.waitForCond(a.lockNextPeriod, a.isNextPeriodCondition, a::isNextPeriod, a::setNextPeriod);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
         }
     }
 }
