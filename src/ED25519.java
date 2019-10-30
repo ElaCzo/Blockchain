@@ -14,6 +14,7 @@ import java.security.Signature;
 import java.security.SignatureException;
 
 import net.i2p.crypto.eddsa.EdDSAEngine;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.EdDSASecurityProvider;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
@@ -52,9 +53,7 @@ public class ED25519{
 		
 		EdDSAParameterSpec spec = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519);
         Signature sgr = new EdDSAEngine(MessageDigest.getInstance(spec.getHashAlgorithm()));
-  
         sgr.initVerify(kp.getPublic());
-
         sgr.update(msg);
         return sgr.verify(sig);
 	}

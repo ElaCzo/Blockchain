@@ -47,6 +47,17 @@ public class Lettre {
        
     }
     
+    @Override
+    public String toString() {
+    	try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+    }
+    
     public byte[] toByte() throws IOException {
     	ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
     	outputStream.write( l.getBytes() );
@@ -65,6 +76,21 @@ public class Lettre {
     	byte[] public_key = Util.hexStringToByteArray(l.get("author").toString());
     	byte[] sig = Util.hexStringToByteArray(l.getString("signature").toString());
     	return new Lettre(lettre, period, head, public_key, sig);
+    }
+    
+    public boolean hasSamePeriodAndAuthor(Lettre l2) {
+    	if(this.getPeriod() == l2.getPeriod()) {
+    		//all keys have the same length
+    		for(int i = 0; i < this.getPublicAuthorKey().length; i++) {
+    			if(l2.getPublicAuthorKey()[i] != publicAuthorKey[i]) {
+    				return false;
+    			}
+    		}
+    	}
+    	else {
+    		return false;
+    	}
+    	return true;
     }
 
 }

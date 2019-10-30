@@ -1,5 +1,8 @@
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Messages {
@@ -19,8 +22,17 @@ public class Messages {
         return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("letters_bag"));
     }
 
-    public static List<String> fullLetterPool(String msgJSON) throws JSONException {
-        return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("full_letterpool"));
+    public static List<Lettre> fullLetterPool(String msg) throws JSONException {
+    	JSONObject msgJSON = Util.parseJSONObjectFromString(msg);
+    	JSONObject fullLetterPoolJSON = (JSONObject) msgJSON.get("full_letterpool");
+
+    	JSONArray letters = (JSONArray) fullLetterPoolJSON.get("letters");
+    	List<Lettre> res = new ArrayList<Lettre>();
+    	for(int i = 0 ; i < letters.length(); i++){
+    		JSONArray letter = (JSONArray) letters.get(i);
+    		res.add(Lettre.parseFromJSON(letter.getJSONObject(1)));
+    	}
+    	return res;
     }
 
     public static boolean isFullLetterPool(String msgJSON) throws JSONException {
@@ -57,5 +69,14 @@ public class Messages {
 
     public static boolean isInjectRawOP(String msgJSON) throws JSONException {
         return Util.parseJSONObjectFromString(msgJSON).has("inject_raw_op");
+    }
+    
+    public static boolean isInjectLetter(String msgJSON) throws JSONException {
+        return Util.parseJSONObjectFromString(msgJSON).has("inject_letter");
+    }
+    
+    public static Lettre letter(String msgJSON) throws JSONException {
+    	JSONObject letter = (JSONObject) Util.parseJSONObjectFromString(msgJSON).get("inject_letter");
+        return Lettre.parseFromJSON(letter);
     }
 }
