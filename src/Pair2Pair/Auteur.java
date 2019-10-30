@@ -69,26 +69,28 @@ public class Auteur extends Pair {
 
             case POOLLETTRE:
 
-                this.pool = new ArrayList<>(m.getPool());
-
                 System.out.println("AUTEUR : " + id + " receive letter pool from " + m.getAuteurID() + " ( MID : "
                         + m.getId() + " ) ");
+                if (pool == null) {
 
-                for (Pair pair : liens) {
-                    if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
+                    this.pool = new ArrayList<>(m.getPool());
+                    for (Pair pair : liens) {
+                        if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
-                        pair.sendMessage(m);
+                            pair.sendMessage(m);
+                        }
                     }
+
+                    synchronized (this) {
+
+                        this.notifyAll();
+                    }
+
                 }
-
-                synchronized (this) {
-
-                    this.notifyAll();
-                }
-
+                break;
             case LETTRE:
-                // System.out.println("AUTEUR : " + id + " receive " + m.getLettre().getC() + "from " + m.getAuteurID()
-                //         + " ( MID : " + m.getId() + " ) ");
+                System.out.println("AUTEUR : " + id + " receive " + m.getLettre().getC() + "from " + m.getAuteurID()
+                        + " ( MID : " + m.getId() + " ) ");
 
                 for (Pair pair : liens) {
                     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {

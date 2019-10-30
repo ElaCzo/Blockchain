@@ -225,7 +225,7 @@ public class Politicien extends Pair {
 
             Blockchain blo = null;
 
-            if (blockchain.size() < 20 && lettres.size() > 10) {
+            if (blockchain.size() < 20 && lettres.size() >7) {
 
                 Block b = createMot();
 
