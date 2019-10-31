@@ -36,12 +36,29 @@ public class Blockchain {
 
     public boolean addBlock(Block blo) {
         bvalue = 0;
+        blo.predhash = getLastHash();
         return chain.add(blo);
+
     }
 
     public boolean isValid() {
         if (size() > 21) {
             return false;
+        }
+
+        for (Block block : chain) {
+            ArrayList<Integer> auteurs = new ArrayList<>();
+            for (Lettre lettre : block.getLettres()) {
+                if (lettre.getBlockhash() != block.predhash) {
+                    return false;
+                }
+                if (auteurs.contains(lettre.getAuteurId())) {
+                    return false;
+                } else {
+                    auteurs.add(lettre.getAuteurId());
+                }
+
+            }
         }
 
         return true;
@@ -114,7 +131,6 @@ public class Blockchain {
         case 'l':
             value += 1;
             break;
-
         case 'm':
             value += 2;
             break;
@@ -122,7 +138,6 @@ public class Blockchain {
         case 'n':
             value += 1;
             break;
-
         case 'o':
             value += 1;
             break;

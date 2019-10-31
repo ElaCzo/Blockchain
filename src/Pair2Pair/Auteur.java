@@ -158,6 +158,7 @@ public class Auteur extends Pair {
                         + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
 
                 if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value() && !fini) {
+                    blockchain =m.getBlock();
                     for (Pair pair : liens) {
                         if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 

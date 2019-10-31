@@ -8,6 +8,7 @@ public class Block {
     private int hash;
     private int AuteurID;
     private int nonce;
+    public int predhash = 0;
 
     ArrayList<Lettre> lettres;
 

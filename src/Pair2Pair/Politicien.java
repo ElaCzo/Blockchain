@@ -189,7 +189,9 @@ public class Politicien extends Pair {
                 System.out.println("POLITICIEN : " + id + " receive Fin from " + m.getAuteurID() + " nb lettres "
                         + m.getBlock().getChars().size() + " ( MID : " + m.getId() + " ) ");
 
-                if (m.getBlock().isValid()) {
+                if (m.getBlock().isValid() && blockchain.value() <= m.getBlock().value()) {
+                    blockchain = m.getBlock();
+
                     for (Pair pair : liens) {
                         if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
 
@@ -225,7 +227,7 @@ public class Politicien extends Pair {
 
             Blockchain blo = null;
 
-            if (blockchain.size() < 20 && lettres.size() >7) {
+            if (blockchain.size() < 20 && lettres.size() > 7) {
 
                 Block b = createMot();
 
@@ -240,7 +242,7 @@ public class Politicien extends Pair {
             }
 
             synchronized (received_block) {
-                if ( blo!= null && blo.isValid()) {
+                if (blo != null && blo.isValid()) {
                     received_block.add(blo);
                 }
 
