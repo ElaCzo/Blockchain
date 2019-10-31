@@ -47,6 +47,10 @@ public class Lettre {
        
     }
     
+    public String headHex() {
+    	return Util.bytesToHex(head);
+    }
+    
     @Override
     public String toString() {
     	try {
@@ -91,6 +95,108 @@ public class Lettre {
     		return false;
     	}
     	return true;
+    }
+    
+    public int scrableValue() {
+        int value = 0;
+        switch (l.charAt(0)) {
+        case 'a':
+            value += 1;
+            break;
+        case 'b':
+            value += 3;
+            break;
+        case 'c':
+            value += 3;
+            break;
+        case 'd':
+            value += 2;
+            break;
+        case 'e':
+            value += 1;
+            break;
+        case 'f':
+            value += 4;
+            break;
+        case 'g':
+            value += 2;
+            break;
+        case 'h':
+            value += 4;
+            break;
+        case 'i':
+            value += 1;
+            break;
+        case 'j':
+            value += 8;
+            break;
+        case 'k':
+            value += 10;
+            break;
+        case 'l':
+            value += 1;
+            break;
+
+        case 'm':
+            value += 2;
+            break;
+
+        case 'n':
+            value += 1;
+            break;
+
+        case 'o':
+            value += 1;
+            break;
+
+        case 'p':
+            value += 3;
+            break;
+
+        case 'q':
+            value += 8;
+            break;
+
+        case 'r':
+            value += 1;
+            break;
+
+        case 's':
+            value += 1;
+            break;
+
+        case 't':
+            value += 1;
+            break;
+
+        case 'u':
+            value += 1;
+            break;
+
+        case 'v':
+            value += 4;
+            break;
+
+        case 'w':
+            value += 10;
+            break;
+
+        case 'x':
+            value += 10;
+            break;
+
+        case 'y':
+            value += 10;
+            break;
+
+        case 'z':
+            value += 10;
+            break;
+
+        default:
+            break;
+        }
+        return value;
     }
 
 }

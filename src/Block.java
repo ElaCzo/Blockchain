@@ -1,81 +1,36 @@
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Block {
-    private String mot;
-    private String hash;
-    private int AuteurID;
-    private String hashPredecesseur;
-    private int nonce;
+    private Mot mot;
+    private Block pred;
+	public Block(Mot mot, Block pred) {
+		super();
+		this.mot = mot;
+		this.pred = pred;
+	}
 
-    ArrayList<Lettre> lettres;
-
-    public Block(String mot, ArrayList<Lettre> lettres, int AuteurID, int nonce) {
-        this.mot = mot;
-        this.lettres = new ArrayList<>(lettres);
-        this.AuteurID = AuteurID;
-        this.nonce = nonce;
-        hash();
-    }
-
-    public Block(String mot, ArrayList<Lettre> lettres, int AuteurID, String hashPredecesseur, int nonce) {
-        this.mot = mot;
-        this.lettres = new ArrayList<>(lettres);
-        this.AuteurID = AuteurID;
-        this.hashPredecesseur=hashPredecesseur;
-        this.nonce = nonce;
-        hash(hashPredecesseur);
-    }
-
-    /**
-     * @return the hash
-     */
-    public String getHash() {
-        return hash;
-    }
-
-    /**
-     * @return the lettres
-     */
-    public ArrayList<Lettre> getLettres() {
-        return lettres;
-    }
-
-    /**
-     * @return the mot
-     */
-    public String getMot() {
-        return mot;
-    }
-
-    /**
-     * @return the auteutID
-     */
-    public int getAuteurID() {
-        return AuteurID;
-    }
-
-    /**
-     * @return the nonce
-     */
-    public int getNonce() {
-        return nonce;
-    }
-
-    public void hash() {
-        try {
-            byte[] nhash = Sha.hash_sha256(new String(mot + "" + AuteurID + "" + nonce));
-            this.hash = Util.bytesToString(nhash);
-        } catch (Exception e) {
-            System.out.println("Erreur SHA dans LETTRE");
-        }
-    }
-
-    public void hash(String hashPredecesseur) {
-        try {
-            byte[] nhash = Sha.hash_sha256(new String(mot + AuteurID + hashPredecesseur + nonce));
-            this.hash = Util.bytesToString(nhash);
-        } catch (Exception e) {
-            System.out.println("Erreur SHA dans LETTRE");
-        }
-    }
+	public int getScore() {
+		if(pred == null) {
+			return mot.getScore();
+		}
+		return mot.getScore() + pred.getScore();
+	}
+	
+	public Mot getMot() {
+		return mot;
+	}
+	
+	public static Block getPred(Mot m, List<Block> blockchain) throws NoSuchAlgorithmException, IOException {
+		if(Arrays.equals(m.getHead(), Sha.hash_sha256(""))) return null;
+		for(Block b: blockchain) {
+			if(Arrays.equals(b.getMot().hash(), m.getHead())) {
+				return b;
+			}
+		}
+		throw new RuntimeException("Block dont have a predecessor and is not first block");
+	}
 }

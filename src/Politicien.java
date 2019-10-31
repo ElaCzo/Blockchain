@@ -6,9 +6,14 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.security.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Politicien extends Client {
     Block block;
@@ -31,6 +36,9 @@ public class Politicien extends Client {
 	    			return;
 	    		}
 	    	}
+	    	//more convenient representation when computing words
+	    	head_mapped.putIfAbsent(l.headHex(), new ArrayList<Lettre>());
+	    	head_mapped.get(l.headHex()).add(l);
 	    	letter_pool.add(l);
     	}
     	finally {
@@ -40,7 +48,7 @@ public class Politicien extends Client {
     }
 
     @Override
-    protected boolean traitementMessage(String msg) throws JSONException {
+    protected boolean traitementMessage(String msg) throws JSONException, NoSuchAlgorithmException, IOException {
         if (super.traitementMessage(msg))
             return true;
         else if(Messages.isFullWordPool(msg)){
@@ -55,6 +63,7 @@ public class Politicien extends Client {
         }
         else if(Messages.isInjectLetter(msg)) {
         	addToPool(Messages.letter(msg));
+        	return true;
         }
         else if(Messages.isFullLetterPool(msg)) {
         	lockletterpool.lock();
@@ -63,6 +72,7 @@ public class Politicien extends Client {
         	}
         	UtilSynchro.notifyCond(fullLetterPool, fullLetterPoolCond, this::setFullLetterPoolAvailable);
         	lockletterpool.unlock();
+        	return true;
         	
         }
         return false;
@@ -70,6 +80,7 @@ public class Politicien extends Client {
 
     public void injectWord(List<Lettre> lettres) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
         byte[] public_key = ((EdDSAPublicKey)_key.getPublic()).getAbyte();
+        byte[] head = lettres.get(0).getHead();
         byte[] sig = ED25519.sign(_key, Sha.hashWord(public_key, lettres, head));
         Mot m = new Mot(lettres, head, public_key, sig);
         JSONObject word = m.toJSON();
@@ -79,20 +90,41 @@ public class Politicien extends Client {
     }
     
     
+    private Map<String,List<Lettre>> head_mapped = new HashMap<String, List<Lettre>>();
+    public void head_map() {
+    	lockletterpool.lock();
+    	head_mapped = letter_pool.stream().collect(Collectors.groupingBy(Lettre::headHex, Collectors.mapping(Function.identity(), Collectors.toList())));
+    	lockletterpool.unlock();
+    }
+	 
     
     public List<Lettre> buildWord() {
-    	List<Lettre> res = new ArrayList<Lettre>();
-    	lockletterpool.lock();
-    	for(Lettre l:letter_pool) {
-    		res.add(l);
+    	try {
+	    	lockletterpool.lock();
+	    	//pick size of word we want to generate
+	    	int max = DicoServer.MAX_SIZE;
+	    	int min = DicoServer.MIN_SIZE;
+	    	int size_w = (int) (Math.random() * (max - min) + min);
+	    	//TODO: choose most interesting block
+	    	for(List<Lettre> letters:head_mapped.values()) {
+	    		if(letters.size() >= size_w) {
+	    			Collections.shuffle(letters);
+	    			return letters.subList(0, size_w);
+	    		}
+	    	}
+	
+	    	return new ArrayList<Lettre>();
+    	}finally {
+        	lockletterpool.unlock();
     	}
-    	lockletterpool.unlock();
-    	return res;
     }
     
     private ReentrantLock lockletterpool = new ReentrantLock();
     
-
+    private boolean isValidWord(String w) throws IOException {
+    	osDict.writeUTF(w);
+    	return isDict.readBoolean();
+    }
     
     public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
 
@@ -114,7 +146,13 @@ public class Politicien extends Client {
 
         
         while(true) {
-        	p.injectWord(p.buildWord());
+        	List<Lettre> word;
+        	String wordRepr;
+        	do {
+        		word = p.buildWord();
+        		wordRepr = word.stream().map(Lettre::getL).collect(Collectors.joining());
+        	}while(!p.isValidWord(wordRepr));
+        	p.injectWord(word);
         	try {
 				UtilSynchro.waitForCond(p.lockNextPeriod, p.isNextPeriodCondition, p::isNextPeriod, p::setNextPeriod);
 			} catch (InterruptedException e) {

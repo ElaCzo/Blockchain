@@ -1,5 +1,9 @@
 #!/bin/bash
-for i in {1..50}
-do
-  java -cp ".:../jar/*" Auteur $1 $2 &
-done
+
+java DicoServer "../dict/dictalphabet.txt" &
+sleep 1
+scrabblos-server -port $2 &
+java -cp ".:../jar/*" Politicien $1 $2 &
+java -cp ".:../jar/*" Auteur $1 $2 &
+
+

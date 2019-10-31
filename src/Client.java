@@ -16,9 +16,12 @@ public class Client {
     protected Socket socketOfClient;
     protected DataOutputStream os;
     protected DataInputStream is;
+    
+    protected Socket socketOfDict;
+    protected DataOutputStream osDict;
+    protected DataInputStream isDict;
 
     protected long period;
-    protected byte[] head;
     
     protected ReentrantLock lockNextPeriod = new ReentrantLock();
     protected Condition isNextPeriodCondition = lockNextPeriod.newCondition();
@@ -31,7 +34,7 @@ public class Client {
 		this.isNextPeriod = isNextPeriod;
 	}
 
-    protected boolean traitementMessage(String msg) throws JSONException {
+    protected boolean traitementMessage(String msg) throws JSONException, NoSuchAlgorithmException, IOException {
         if (Messages.isNextTurn(msg)) {
             period = Messages.nextTurn(msg);
 			UtilSynchro.notifyCond(lockNextPeriod, isNextPeriodCondition, this::setNextPeriod);
@@ -56,12 +59,18 @@ public class Client {
                         msg = Util.readMsg(is);
                         if(traitementMessage(msg));
                         else{
-                            System.out.println("Commande serveur non reconnue.");
+                            System.out.println("Commande serveur non reconnue pour le message " +msg);
                         }
                     }while(true);
                 } catch (JSONException e) {
                     e.printStackTrace();
-                }
+                } catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
                 System.out.println("Serveur déconnecté");
                 try {
                     closeConnection();
@@ -77,6 +86,10 @@ public class Client {
         // Send a request to connect to the server is listening
         // on machine 'localhost' port 9999.
         socketOfClient = new Socket(serverHost, port);
+        
+        socketOfDict = new Socket(serverHost, DicoServer.PORT);
+        osDict = new DataOutputStream(socketOfDict.getOutputStream());
+        isDict = new DataInputStream(socketOfDict.getInputStream());
 
         // Create output stream at the client (to send data to the server)
         os = new DataOutputStream(socketOfClient.getOutputStream());
@@ -84,8 +97,6 @@ public class Client {
         // Input stream at Client (Receive data from the server).
         is = new DataInputStream(socketOfClient.getInputStream());
 
-        //for now
-        head = Sha.hash_sha256("");
 
         readingInChanel();
     }

@@ -79,4 +79,13 @@ public class Messages {
     	JSONObject letter = (JSONObject) Util.parseJSONObjectFromString(msgJSON).get("inject_letter");
         return Lettre.parseFromJSON(letter);
     }
+    
+    public static boolean isInjectWord(String msgJSON) throws JSONException {
+        return Util.parseJSONObjectFromString(msgJSON).has("inject_word");
+    }
+    
+    public static Mot word(String msgJSON) throws JSONException {
+    	JSONObject word = (JSONObject) Util.parseJSONObjectFromString(msgJSON).get("inject_word");
+        return Mot.parseFromJSON(word);
+    }
 }

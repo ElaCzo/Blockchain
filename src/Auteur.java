@@ -1,10 +1,14 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -17,12 +21,19 @@ import net.i2p.crypto.eddsa.EdDSAPublicKey;
 public class Auteur extends Client{
 
     private List<String> letter_bag;
+    //kind of similar to word pool but dont have to rebuild the chain all the time
+    private List<Block> blockchain;
+    private Block blockWithBestScore;
+    private int bestCurrentScore = 0;
     private KeyPair _key;
     private String publicKeyHexa;
+    
+
 
     @Override
-    protected boolean traitementMessage(String msg) throws JSONException {
-        if(super.traitementMessage(msg))
+    protected boolean traitementMessage(String msg) throws JSONException, NoSuchAlgorithmException, IOException {
+    	System.out.println("CLient recoit  " + msg);
+    	if(super.traitementMessage(msg))
             return true;
         /*
         else if(Messages.isFullLetterPool(msg)){
@@ -45,6 +56,22 @@ public class Auteur extends Client{
         }
         else if(Messages.isInjectLetter(msg)) {
         	//do nothing
+        	return true;
+        }
+        else if(Messages.isInjectWord(msg)) {
+        	System.out.println("CLient recoit mot " + msg);
+        	Mot m = Messages.word(msg);
+        	if(m.isValid()) {
+        		lockBlockChain.lock();
+        		Block b = new Block(m, Block.getPred(m, blockchain));
+        		if(b.getScore() > bestCurrentScore) {
+        			bestCurrentScore = b.getScore();
+        			blockWithBestScore = b;
+        		}
+        		blockchain.add(b);
+        		lockBlockChain.unlock();
+        	}
+        	return true;
         }
         return false;
     }
@@ -58,6 +85,9 @@ public class Auteur extends Client{
         register();
         
         //for now
+        blockchain = new ArrayList<Block>();
+        blockWithBestScore = new Block(new MotVide(), null);
+        blockchain.add(blockWithBestScore);
         period = 0;
     }
 
@@ -71,8 +101,14 @@ public class Auteur extends Client{
 
     public void injectLetter(String c) throws JSONException, InvalidKeyException, SignatureException, NoSuchAlgorithmException, IOException {
         byte[] public_key = ((EdDSAPublicKey) _key.getPublic()).getAbyte();
-        byte[] sig = ED25519.sign(_key, Sha.hashLetter(public_key, c, period, head));
-        Lettre l = new Lettre(c, period, head, public_key, sig);
+        lockBlockChain.lock();
+        lockNextPeriod.lock();
+        long p = period;
+        byte[] head = blockWithBestScore.getMot().hash();
+        byte[] sig = ED25519.sign(_key, Sha.hashLetter(public_key, c, p, head));
+        lockBlockChain.unlock();
+        lockNextPeriod.unlock();
+        Lettre l = new Lettre(c, p, head, public_key, sig);
         JSONObject letter = l.toJSON();
         JSONObject inject_letter = new JSONObject();
         inject_letter.put("inject_letter", letter);
@@ -89,33 +125,25 @@ public class Auteur extends Client{
     public boolean getLetterPoolAvailable() {
     	return letterPoolAvailable;
     }
-    public void waitForLetterPool() throws InterruptedException {
-    	lockLetterPool.lock();
-    	try {
-    		while(!letterPoolAvailable)
-    			letterPoolAvailableCondition.await();
-    	}
-    	finally {
-    		lockLetterPool.unlock();
-    	}
-    }
+
     
-    public void notifyLetterPool()  {
-    	lockLetterPool.lock();
-    	try {
-    		letterPoolAvailable = true;
-    		letterPoolAvailableCondition.signalAll();
-    	}
-    	finally {
-    		lockLetterPool.unlock();
-    	}
-    }    
     private ReentrantLock lockFullWordPool = new ReentrantLock();
     private Condition fullWordPoolAvailableCondition = lockLetterPool.newCondition();
     private boolean fullWordPoolAvailable = false;
 
+    private ReentrantLock lockBlockChain = new ReentrantLock();
+    private Condition letterblockChainAvailableCondition = lockLetterPool.newCondition();
+    private boolean blockChainAvailable = false;
+    
+    public boolean isBlockChainAvailable() {
+		return blockChainAvailable;
+	}
 
-    public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+	public void setBlockChainAvailable(boolean blockChainAvailable) {
+		this.blockChainAvailable = blockChainAvailable;
+	}
+
+	public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
 
         if(args.length!=2) {
             System.out.println("usage : command serveur port");
@@ -137,12 +165,13 @@ public class Auteur extends Client{
         
         while(true) {
         	a.injectLetter(a.letter_bag.remove(0));
-        	a.getFullLetterPool();
         	try {
 				UtilSynchro.waitForCond(a.lockNextPeriod, a.isNextPeriodCondition, a::isNextPeriod, a::setNextPeriod);
-			} catch (InterruptedException e) {
+				Thread.sleep(10000);
+        	} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+        	
         }
     }
 }

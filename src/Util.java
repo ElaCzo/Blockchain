@@ -13,8 +13,6 @@ public class Util {
 
 	public static void writeMsg(DataOutputStream os, JSONObject json_msg) {
 		String msg = json_msg.toString();
-		System.out.println("json message " + msg.toString());
-		System.out.println("length : " + msg.length());
 		try {
 			os.writeLong(msg.length());
 			os.write(msg.getBytes());
@@ -26,8 +24,6 @@ public class Util {
 	}
 	
 	public static void writeMsg(DataOutputStream os, String msg) {
-		System.out.println("json message " + msg.toString());
-		System.out.println("length : " + msg.length());
 		try {
 			os.writeLong(msg.length());
 			os.write(msg.getBytes());
