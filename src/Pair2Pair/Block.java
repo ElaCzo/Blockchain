@@ -8,6 +8,7 @@ public class Block {
     private int hash;
     private int AuteurID;
     private int nonce;
+    public int predhash = 0;
 
     ArrayList<Lettre> lettres;
 
@@ -63,6 +64,16 @@ public class Block {
             System.out.println("Erreur SHA dans LETTRE");
         }
 
+    }
+
+    public String toString() {
+        String sortie = new String();
+        sortie += "{";
+        sortie += mot;
+        // sortie += " ,AuteurID :" + AuteurID ;
+        // sortie += " ,nonce :" + nonce ;
+        sortie += "}";
+        return sortie;
     }
 
 }

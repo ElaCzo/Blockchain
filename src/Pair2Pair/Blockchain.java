@@ -19,16 +19,48 @@ public class Blockchain {
         chain = new ArrayList<>(bl);
     }
 
+    public int getLastHash() {
+
+        // System.out.println(chain.size());
+        try {
+            return chain.get(chain.size() - 1).getHash();
+
+        } catch (IndexOutOfBoundsException e) {
+            return 0;
+        }
+    }
+
     public int size() {
         return chain.size();
     }
 
-    public boolean add(Block blo) {
+    public boolean addBlock(Block blo) {
         bvalue = 0;
+        blo.predhash = getLastHash();
         return chain.add(blo);
+
     }
 
     public boolean isValid() {
+        if (size() > 21) {
+            return false;
+        }
+
+        for (Block block : chain) {
+            ArrayList<Integer> auteurs = new ArrayList<>();
+            for (Lettre lettre : block.getLettres()) {
+                if (lettre.getBlockhash() != block.predhash) {
+                    return false;
+                }
+                if (auteurs.contains(lettre.getAuteurId())) {
+                    return false;
+                } else {
+                    auteurs.add(lettre.getAuteurId());
+                }
+
+            }
+        }
+
         return true;
     }
 
@@ -99,7 +131,6 @@ public class Blockchain {
         case 'l':
             value += 1;
             break;
-
         case 'm':
             value += 2;
             break;
@@ -107,7 +138,6 @@ public class Blockchain {
         case 'n':
             value += 1;
             break;
-
         case 'o':
             value += 1;
             break;
@@ -205,8 +235,13 @@ public class Blockchain {
 
     @Override
     public String toString() {
-        // TODO
-        return null;
+        String sortie = new String();
+        sortie += "[";
+        for (Block block : chain) {
+            sortie += block.toString();
+        }
+        sortie += "]";
+        return sortie;
     }
 
 }

@@ -7,10 +7,12 @@ public class Lettre {
     private char c;
     private int hash;
     private int auteurId;
+    private int blockhash;
 
-    public Lettre(char c, int auteurId, int nonce) {
+    public Lettre(char c, int auteurId, int bhash, int nonce) {
         this.c = c;
         this.auteurId = auteurId;
+        this.blockhash = bhash;
         this.nonce = nonce;
         hash();
     }
@@ -24,6 +26,13 @@ public class Lettre {
             System.out.println("Erreur SHA dans LETTRE");
         }
 
+    }
+
+    /**
+     * @return the blockhash
+     */
+    public int getBlockhash() {
+        return blockhash;
     }
 
     public static boolean contain(int auteurId, ArrayList<Lettre> list) {

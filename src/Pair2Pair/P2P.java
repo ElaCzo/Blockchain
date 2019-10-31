@@ -65,14 +65,14 @@ public class P2P {
             e.printStackTrace();
         }
 
-        int nbPairs = 10;
+        int nbPairs = 30;
 
         Pair[] pairs = new Pair[nbPairs];
 
         Random rnd = new Random();
 
         ArrayList<Character> pool = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 200; i++) {
             pool.add((char) (rnd.nextInt(26) + 'a'));
         }
 
@@ -116,6 +116,11 @@ public class P2P {
             } catch (Exception e) {
                 // TODO: handle exception
             }
+        }
+
+        for (Pair pair : pairs) {
+            System.out.println(pair.getBlockchain().toString());
+
         }
 
         for (Pair pair : pairs) {
