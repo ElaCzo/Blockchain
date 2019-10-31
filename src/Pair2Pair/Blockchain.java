@@ -40,7 +40,7 @@ public class Blockchain {
     }
 
     public boolean isValid() {
-        if (size() >= 21) {
+        if (size() > 21) {
             return false;
         }
 

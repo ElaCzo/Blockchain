@@ -89,8 +89,9 @@ public class Auteur extends Pair {
                 }
                 break;
             case LETTRE:
-                System.out.println("AUTEUR : " + id + " receive " + m.getLettre().getC() + "from " + m.getAuteurID()
-                        + " ( MID : " + m.getId() + " ) ");
+                // System.out.println("AUTEUR : " + id + " receive " + m.getLettre().getC() +
+                // "from " + m.getAuteurID()
+                // + " ( MID : " + m.getId() + " ) ");
 
                 for (Pair pair : liens) {
                     if (m.getAuteurID() != pair.getPairId() && !pair.getMessagesRecus().contains(m.getId())) {
@@ -104,33 +105,34 @@ public class Auteur extends Pair {
             case BLOCK:
 
                 if (fini) {
-                    System.out.println("Auteur : " + id + " receive block from " + m.getAuteurID() + " | size : "
-                            + m.getBlock().size() + " ( MID : " + m.getId() + " ) ");
+                    // System.out.println("Auteur : " + id + " receive block from " +
+                    // m.getAuteurID() + " | size : "
+                    // + m.getBlock().size() + " ( MID : " + m.getId() + " ) ");
 
                 } else {
 
                     if (m.getBlock().isValid()) {
 
-                        int value = blockchain.value();
+                            int value = blockchain.value();
 
-                        if (value <= m.getBlock().value()) {
-                            blockchain = m.getBlock();
-                            if (blockchain.size() == 20 && fini == false) {
+                            if (value <= m.getBlock().value()) {
+                                blockchain = m.getBlock();
+                                if (blockchain.size() == 20 && fini == false) {
 
-                                for (Pair pair : liens) {
+                                    for (Pair pair : liens) {
 
-                                    pair.sendMessage(new Message(m.getBlock()));
-                                    fini = true;
+                                        pair.sendMessage(new Message(m.getBlock()));
+                                        fini = true;
 
+                                    }
+                                    return;
                                 }
-                                return;
                             }
 
                             for (Pair pair : liens) {
 
                                 pair.sendMessage(m);
                             }
-                        }
                     }
 
                 }
