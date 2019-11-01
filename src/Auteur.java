@@ -9,7 +9,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -22,9 +24,7 @@ public class Auteur extends Client{
 
     private List<String> letter_bag;
     //kind of similar to word pool but dont have to rebuild the chain all the time
-    private List<Block> blockchain;
-    private Block blockWithBestScore;
-    private int bestCurrentScore = 0;
+    private TreeSet<Block> blockchain;
     private KeyPair _key;
     private String publicKeyHexa;
     
@@ -32,9 +32,21 @@ public class Auteur extends Client{
 
     @Override
     protected boolean traitementMessage(String msg) throws JSONException, NoSuchAlgorithmException, IOException {
-    	System.out.println("CLient recoit  " + msg);
+    	System.out.println("Auteur recoit  " + msg);
     	if(super.traitementMessage(msg))
             return true;
+        else if(Messages.isFullWordPool(msg)){
+        	lockBlockChain.lock();
+            List<Mot> words = Messages.fullWordPool(msg);
+            for(Mot m: words) {
+            	Block b = new Block(m, Block.getPred(m, blockchain));
+            	blockchain.add(b);
+            }
+        	lockBlockChain.unlock();
+            UtilSynchro.notifyCond(fullWordPool, fullWordPoolCond, this::setFullWordPoolAvailable);   	
+            
+            return true;
+        }
         /*
         else if(Messages.isFullLetterPool(msg)){
             letter_bag=Messages.fullLetterPool(msg);
@@ -59,16 +71,13 @@ public class Auteur extends Client{
         	return true;
         }
         else if(Messages.isInjectWord(msg)) {
-        	System.out.println("CLient recoit mot " + msg);
         	Mot m = Messages.word(msg);
         	if(m.isValid()) {
         		lockBlockChain.lock();
         		Block b = new Block(m, Block.getPred(m, blockchain));
-        		if(b.getScore() > bestCurrentScore) {
-        			bestCurrentScore = b.getScore();
-        			blockWithBestScore = b;
-        		}
-        		blockchain.add(b);
+        		boolean s = blockchain.add(b);
+        		System.out.println("score is " +b.getScore());
+        		System.out.println("etat de la blockchain apres injection " + s);
         		lockBlockChain.unlock();
         	}
         	return true;
@@ -85,9 +94,10 @@ public class Auteur extends Client{
         register();
         
         //for now
-        blockchain = new ArrayList<Block>();
-        blockWithBestScore = new Block(new MotVide(), null);
-        blockchain.add(blockWithBestScore);
+        blockchain = new TreeSet<Block>(new ComparatorBlock());
+        blockchain.add(new Block(new MotVide(), null));
+        
+        //set period with msg full_word_pool would be better
         period = 0;
     }
 
@@ -104,7 +114,9 @@ public class Auteur extends Client{
         lockBlockChain.lock();
         lockNextPeriod.lock();
         long p = period;
-        byte[] head = blockWithBestScore.getMot().hash();
+        byte[] head = blockchain.last().getMot().hash();
+        System.out.println("etat de la blockchain " + blockchain);
+        System.out.println("mot choisi sur lequel injecter " + blockchain.last().getMot().toJSON().toString());
         byte[] sig = ED25519.sign(_key, Sha.hashLetter(public_key, c, p, head));
         lockBlockChain.unlock();
         lockNextPeriod.unlock();

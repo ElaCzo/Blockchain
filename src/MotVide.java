@@ -1,6 +1,10 @@
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MotVide extends Mot {
 
 	private MotVide(List<Lettre> letters, byte[] head, byte[] politician, byte[] sig) {
@@ -21,5 +25,18 @@ public class MotVide extends Mot {
 	public int getScore() {
 		return 0;
 	}
+	
+	@Override
+    public JSONObject toJSON() throws JSONException {
+    	JSONObject word = new JSONObject();
+        word.put("emptyword", JSONObject.NULL);
+        return word;
+       
+    }
+	
+	@Override
+    public boolean isEmptyWord() {
+    	return true;
+    }
 
 }

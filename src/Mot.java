@@ -102,5 +102,23 @@ public class Mot {
     	}
     	return true;
     }
+    
+    public String headHex() {
+    	return Util.bytesToHex(head);
+    }
+    
+    public String toString() {
+    	try {
+			return toJSON().toString();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+    }
+    
+    public boolean isEmptyWord() {
+    	return false;
+    }
 
 }

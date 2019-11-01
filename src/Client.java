@@ -154,6 +154,18 @@ public class Client {
 	public void setFullLetterPoolAvailable(boolean fullLetterPoolAvailable) {
 		this.fullLetterPoolAvailable = fullLetterPoolAvailable;
 	}
+	
+    protected ReentrantLock fullWordPool = new ReentrantLock();
+    protected Condition fullWordPoolCond = fullWordPool.newCondition();
+    protected boolean fullWordPoolAvailable = false;
+
+	public boolean isFullWordPoolAvailable() {
+		return fullWordPoolAvailable;
+	}
+
+	public void setFullWordPoolAvailable(boolean fullWordPoolAvailable) {
+		this.fullWordPoolAvailable = fullWordPoolAvailable;
+	}
 
 	public static void main(String[] args) throws UnknownHostException, JSONException, IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
         if(args.length!=2) {

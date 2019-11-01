@@ -39,8 +39,19 @@ public class Messages {
         return Util.parseJSONObjectFromString(msgJSON).has("full_letterpool");
     }
 
-    public static List<String> fullWordPool(String msgJSON) throws JSONException {
-        return Util.JSONArrayToList(Util.parseJSONObjectFromString(msgJSON).getJSONArray("full_wordpool"));
+    public static List<Mot> fullWordPool(String msg) throws JSONException {
+
+        System.out.println("le pool de mot est " + msg);
+    	JSONObject msgJSON = Util.parseJSONObjectFromString(msg);
+    	JSONObject fullLetterPoolJSON = (JSONObject) msgJSON.get("full_wordpool");
+
+    	JSONArray words = (JSONArray) fullLetterPoolJSON.get("words");
+    	List<Mot> res = new ArrayList<Mot>();
+    	for(int i = 0 ; i < words.length(); i++){
+    		JSONArray letter = (JSONArray) words.get(i);
+    		res.add(Mot.parseFromJSON(letter.getJSONObject(1)));
+    	}
+    	return res;
     }
 
     public static boolean isFullWordPool(String msgJSON) throws JSONException {
