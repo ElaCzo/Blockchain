@@ -110,6 +110,12 @@ public class Politicien extends Client {
         JSONObject inject_word = new JSONObject();
         inject_word.put("inject_word", word);
         Util.writeMsg(os, inject_word);
+        
+        //dont forget to add word injected to blockchain as message is not resend
+        // by the server
+        lockBlockChain.lock();
+        blockchain.add(new Block(m, Block.getPred(m, blockchain)));
+        lockBlockChain.unlock();
     }
     
     
@@ -135,8 +141,9 @@ public class Politicien extends Client {
 	    	//identify most interesting blockchain for this size of word
 	    	List<Lettre> letters = null;
 	    	boolean found_one = false;
+	    	Block b = null;
 	    	for (Iterator<Block> i = blockchain.descendingIterator(); i.hasNext(); ) {
-	    		Block b = i.next();
+	    		b = i.next();
 	    		letters = head_mapped.get(Util.bytesToHex(b.getMot().hash()));
 	    		if(letters.size() >= size_w) {
 	    			found_one = true;
@@ -146,8 +153,8 @@ public class Politicien extends Client {
 	    	
 	    	//not enough letter for this size
 	    	if(!found_one) return new ArrayList<Lettre>();
-	    	
-	    	
+	    	System.out.println("etat de la blockchain " + blockchain);
+	    	System.out.println("i chose block " + b);
 
 	    	return letters.subList(0, size_w);
 	

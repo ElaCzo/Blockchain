@@ -32,7 +32,6 @@ public class Auteur extends Client{
 
     @Override
     protected boolean traitementMessage(String msg) throws JSONException, NoSuchAlgorithmException, IOException {
-    	System.out.println("Auteur recoit  " + msg);
     	if(super.traitementMessage(msg))
             return true;
         else if(Messages.isFullWordPool(msg)){
@@ -75,9 +74,12 @@ public class Auteur extends Client{
         	if(m.isValid()) {
         		lockBlockChain.lock();
         		Block b = new Block(m, Block.getPred(m, blockchain));
+        		
         		boolean s = blockchain.add(b);
+        		/*
         		System.out.println("score is " +b.getScore());
         		System.out.println("etat de la blockchain apres injection " + s);
+        		*/
         		lockBlockChain.unlock();
         	}
         	return true;
@@ -115,8 +117,10 @@ public class Auteur extends Client{
         lockNextPeriod.lock();
         long p = period;
         byte[] head = blockchain.last().getMot().hash();
+        /*
         System.out.println("etat de la blockchain " + blockchain);
         System.out.println("mot choisi sur lequel injecter " + blockchain.last().getMot().toJSON().toString());
+        */
         byte[] sig = ED25519.sign(_key, Sha.hashLetter(public_key, c, p, head));
         lockBlockChain.unlock();
         lockNextPeriod.unlock();
