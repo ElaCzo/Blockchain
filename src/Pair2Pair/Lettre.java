@@ -20,7 +20,7 @@ public class Lettre {
     public void hash() {
         try {
 
-            int nhash = Sha.Sha256(new String(c + "" + auteurId + "" + nonce));
+            int nhash = Sha.Sha256(new String(c + "" + auteurId + "" + nonce + "" + blockhash));
             this.hash = nhash;
         } catch (Exception e) {
             System.out.println("Erreur SHA dans LETTRE");
