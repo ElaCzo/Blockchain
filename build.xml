@@ -26,7 +26,7 @@
     </javac>
   </target>
 
-  <target name="runP2P" depends="compile"
+  <target name="run" depends="compile"
           description="run examples">
     <java classname="Pair2Pair.P2P" classpath="${build}">
         
@@ -34,16 +34,7 @@
         <arg value="${arg1}"/>
     </java>
   </target>
-    <target name="runClient" depends="compile"
-          description="run examples">
-    <java classname="Client" classpath="${build}">
-        <classpath>
-          <pathelement location="jar/java-json.jar"/>
-        </classpath>
-        <arg value="${arg0}"/>
-        <arg value="${arg1}"/>
-    </java>
-  </target>
+ 
 
   <target name="dist" depends="init,clean"
         description="Generer la distribution" >
