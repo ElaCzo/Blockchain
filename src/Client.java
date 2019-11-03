@@ -20,6 +20,10 @@ public class Client {
     protected Socket socketOfDict;
     protected DataOutputStream osDict;
     protected DataInputStream isDict;
+    
+    protected Socket socketOfScore;
+    protected DataOutputStream osScore;
+    protected DataInputStream isScore;
 
     protected long period;
     
@@ -87,10 +91,32 @@ public class Client {
         // on machine 'localhost' port 9999.
         socketOfClient = new Socket(serverHost, port);
         
+        System.out.println("connecting on port " + DicoServer.PORT);
         socketOfDict = new Socket(serverHost, DicoServer.PORT);
         osDict = new DataOutputStream(socketOfDict.getOutputStream());
         isDict = new DataInputStream(socketOfDict.getInputStream());
+        
 
+        socketOfScore = new Socket(serverHost, ScoreBlockchainServer.PORT);
+        osScore = new DataOutputStream(socketOfScore.getOutputStream());
+        isScore = new DataInputStream(socketOfScore.getInputStream());
+
+        // Create output stream at the client (to send data to the server)
+        os = new DataOutputStream(socketOfClient.getOutputStream());
+
+        // Input stream at Client (Receive data from the server).
+        is = new DataInputStream(socketOfClient.getInputStream());
+
+
+        readingInChanel();
+    }
+    
+    
+    public Client (String serverHost, int port, boolean specialclient) throws JSONException, UnknownHostException, IOException, NoSuchAlgorithmException, NoSuchProviderException {
+        // Send a request to connect to the server is listening
+        // on machine 'localhost' port 9999.
+        socketOfClient = new Socket(serverHost, port);
+        
         // Create output stream at the client (to send data to the server)
         os = new DataOutputStream(socketOfClient.getOutputStream());
 

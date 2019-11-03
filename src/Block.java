@@ -33,6 +33,10 @@ public class Block {
 		return mot;
 	}
 	
+	public Block getPred() {
+		return pred;
+	}
+	
 	public static Block getPred(Mot m, Iterable<Block> blockchain) throws NoSuchAlgorithmException, IOException {
 		if(m.isEmptyWord()) return null;
 		for(Block b: blockchain) {

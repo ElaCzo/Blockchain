@@ -97,6 +97,10 @@ public class Lettre {
     	return true;
     }
     
+    public String authorId() {
+    	return Util.bytesToHex(publicAuthorKey);
+    }
+    
     public int scrableValue() {
         int value = 0;
         switch (l.charAt(0)) {
