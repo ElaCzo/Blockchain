@@ -100,6 +100,7 @@ public class ScoreBlockchainServer {
    static public void computeScoreBlockchain() {
 	   Block b = p.getBlockchain().last();
 	   while (b.getPred() != null){
+		   System.out.println("bloc choisi " + b);
 		   String pId = b.getMot().politicianId();
 		   int scoreMot = b.getMot().getScore();
 		   if(!scorePoli.containsKey(pId)) {
@@ -110,7 +111,7 @@ public class ScoreBlockchainServer {
 		   
 		   for(Lettre l: b.getMot().getLetters()) {
 			   String aId = l.authorId();
-			   int scoreLettre = b.getMot().getScore();
+			   int scoreLettre = l.scrableValue();
 			   if(!scoreAuthor.containsKey(aId)) {
 				   scoreAuthor.put(aId, 0);
 			   }

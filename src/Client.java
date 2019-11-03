@@ -91,10 +91,12 @@ public class Client {
         // on machine 'localhost' port 9999.
         socketOfClient = new Socket(serverHost, port);
         
+        System.out.println("connecting on port " + DicoServer.PORT);
         socketOfDict = new Socket(serverHost, DicoServer.PORT);
         osDict = new DataOutputStream(socketOfDict.getOutputStream());
         isDict = new DataInputStream(socketOfDict.getInputStream());
         
+
         socketOfScore = new Socket(serverHost, ScoreBlockchainServer.PORT);
         osScore = new DataOutputStream(socketOfScore.getOutputStream());
         isScore = new DataInputStream(socketOfScore.getInputStream());
@@ -115,10 +117,6 @@ public class Client {
         // on machine 'localhost' port 9999.
         socketOfClient = new Socket(serverHost, port);
         
-        socketOfDict = new Socket(serverHost, DicoServer.PORT);
-        osDict = new DataOutputStream(socketOfDict.getOutputStream());
-        isDict = new DataInputStream(socketOfDict.getInputStream());
-  
         // Create output stream at the client (to send data to the server)
         os = new DataOutputStream(socketOfClient.getOutputStream());
 

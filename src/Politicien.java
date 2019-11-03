@@ -143,12 +143,10 @@ public class Politicien extends Client {
 		lockletterpool.unlock();
 	}
 
-
+	private int max = -1;
+	private int min = -1;
 	public List<Lettre> buildWord() throws NoSuchAlgorithmException, IOException {
 		try {
-			//pick size of word we want to generate
-			int max = DicoServer.MAX_SIZE;
-			int min = DicoServer.MIN_SIZE;
 			int size_w = (int) (Math.random() * (max - min) + min);
 			System.out.println("trying to generate a word of size " + size_w);
 			lockletterpool.lock();
@@ -162,6 +160,7 @@ public class Politicien extends Client {
 			for (Iterator<Block> i = blockchain.descendingIterator(); i.hasNext(); ) {
 				b = i.next();
 				letters = head_mapped.get(Util.bytesToHex(b.getMot().hash()));
+				if(letters == null) continue;
 				if(letters.size() >= size_w) {
 					found_one = true;
 					break;
@@ -248,7 +247,14 @@ public class Politicien extends Client {
 		final int port = Integer.valueOf(args[1]);
 		Politicien p = new Politicien(serverHost, port);
 		p.listen();
-
+		
+		//retrieve size of words from dict
+		p.osDict.writeUTF("max1");
+		p.max = p.isDict.readInt();
+		p.osDict.writeUTF("min1");
+		p.min = p.isDict.readInt();
+		
+		
 		//inform score follower there is new author
 		p.osScore.writeUTF("politician");
 		
