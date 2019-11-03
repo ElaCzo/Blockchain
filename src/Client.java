@@ -91,7 +91,6 @@ public class Client {
         // on machine 'localhost' port 9999.
         socketOfClient = new Socket(serverHost, port);
         
-        System.out.println("connecting on port " + DicoServer.PORT);
         socketOfDict = new Socket(serverHost, DicoServer.PORT);
         osDict = new DataOutputStream(socketOfDict.getOutputStream());
         isDict = new DataInputStream(socketOfDict.getInputStream());

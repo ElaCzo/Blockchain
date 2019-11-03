@@ -77,7 +77,6 @@ public class ScoreBlockchainServer {
     static int decNbPoli() {
     	try {
 	    	lockpoli.lock();
-	    	System.out.println("nb poli vaut " + nb_poli);
 	    	nb_poli--;
 	    	if(nb_poli == 0) {
 	    		computeScoreBlockchain();

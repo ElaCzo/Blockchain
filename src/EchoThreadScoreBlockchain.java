@@ -26,9 +26,7 @@ public class EchoThreadScoreBlockchain extends Thread {
         String line;
         while (true) {
             try {
-            	System.out.println("back to waiting");
                 line = inp.readUTF();
-                System.out.println("receiving message " + line);
                 if ((line == null) || line.equalsIgnoreCase("QUIT")) {
                     socket.close();
                     return;

@@ -69,7 +69,6 @@ public class DicoServer {
 	public static void main(String args[]) throws IOException {
 		ServerSocket serverSocket = null;
 		Socket socket = null;
-		System.out.println("chosen port " + PORT);
 		try {
 			serverSocket = new ServerSocket(PORT);
 		} catch (IOException e) {

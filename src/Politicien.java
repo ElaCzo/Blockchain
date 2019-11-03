@@ -148,11 +148,9 @@ public class Politicien extends Client {
 	public List<Lettre> buildWord() throws NoSuchAlgorithmException, IOException {
 		try {
 			int size_w = (int) (Math.random() * (max - min) + min);
-			System.out.println("trying to generate a word of size " + size_w);
 			lockletterpool.lock();
 			lockBlockChain.lock();
 
-			System.out.println("la map est " + head_mapped);
 			//identify most interesting blockchain for this size of word
 			List<Lettre> letters = null;
 			boolean found_one = false;
@@ -169,8 +167,6 @@ public class Politicien extends Client {
 
 			//not enough letter for this size
 			if(!found_one) return new ArrayList<Lettre>();
-			System.out.println("etat de la blockchain " + blockchain);
-			System.out.println("i chose block " + b);
 
 			return letters.subList(0, size_w);
 
