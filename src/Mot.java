@@ -120,5 +120,9 @@ public class Mot {
     public boolean isEmptyWord() {
     	return false;
     }
+    
+    public String politicianId() {
+    	return Util.bytesToHex(politician);
+    }
 
 }

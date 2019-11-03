@@ -101,6 +101,9 @@ public class Auteur extends Client{
         
         //set period with msg full_word_pool would be better
         period = 0;
+        
+        //inform score follower there is new author
+        osScore.writeUTF("author");
     }
 
     public void register() throws JSONException {
@@ -179,7 +182,8 @@ public class Auteur extends Client{
 			e.printStackTrace();
 		}
         
-        while(true) {
+        for(int i = 0; i < a.letter_bag.size() ; i++) {
+        	System.out.println("taille du sac " + a.letter_bag.size());
         	a.injectLetter(a.letter_bag.remove(0));
         	try {
 				UtilSynchro.waitForCond(a.lockNextPeriod, a.isNextPeriodCondition, a::isNextPeriod, a::setNextPeriod);
@@ -189,5 +193,7 @@ public class Auteur extends Client{
 			}
         	
         }
+        System.out.println("Auteur se termine");
+        a.osScore.writeUTF("quit author");
     }
 }
