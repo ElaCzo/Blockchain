@@ -65,7 +65,7 @@ public class P2P {
             e.printStackTrace();
         }
 
-        int nbPairs = 30;
+        int nbPairs = 40;
 
         Pair[] pairs = new Pair[nbPairs];
 
